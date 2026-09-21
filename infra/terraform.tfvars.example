@@ -1,0 +1,19 @@
+# Example S6 workspace inputs. Copy to terraform.tfvars (git-ignored) and fill
+# with the NON-SECRET values the controller already used for your environment
+# (see EQUIVALENCE.md for exactly which values to copy). These must match the
+# controller inputs so adoption is a zero-change plan.
+
+student_id          = "your-environment-id"        # same id the controller used
+aws_region          = "eu-west-1"
+eip_allocation_id   = "eipalloc-xxxxxxxxxxxxxxxxx"  # from the controller address state
+ssh_public_key_path = "/absolute/path/to/dbai.pub"  # your controller-local SSH public key
+
+# instance_type defaults to t3.medium (containers profile). Leave unset to keep it.
+# bootstrap_template_path defaults to ./cloud-init.yaml (byte-identical to the
+# controller's containers profile template). Leave unset to keep it.
+
+# Optional, only once enrolled in later sessions:
+# deploy_public_key_path     = "/absolute/path/to/deploy.pub"
+# instructor_public_key_path = "/absolute/path/to/instructor.pub"
+# my_ip_cidr                 = "203.0.113.4/32"
+# app_ingress_cidrs          = ["203.0.113.4/32"]

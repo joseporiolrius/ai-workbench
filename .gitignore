@@ -1,0 +1,36 @@
+# Controller-owned / secret / generated — never versioned in student coursework
+# (doc-18 §2, §3; RECOVERY-03 AC#3).
+
+# Terraform local backend state and its backups (controller-owned)
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Concrete backend config (schema/example is committed; real config is not)
+backend.hcl
+infra/backend.hcl
+
+# Real variable values (the *.example is committed; filled values are not)
+terraform.tfvars
+*.auto.tfvars
+infra/terraform.tfvars
+
+# Binary/saved plans
+*.tfplan
+*.plan
+
+# Provider/module cache and CLI cruft
+.terraform/
+.terraform.tfstate.lock.info
+crash.log
+crash.*.log
+
+# Credentials and private keys
+*.pem
+*.key
+id_*
+!*.pub
+.env
+.env.*
+aws_credentials.yaml
+credentials
