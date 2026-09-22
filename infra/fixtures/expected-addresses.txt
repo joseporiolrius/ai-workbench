@@ -1,0 +1,14 @@
+# Expected Terraform resource addresses managed by the S6 student root.
+# These are exactly the controller root's module.workspace.* addresses, at the
+# pinned module revision (see ../MODULE_PROVENANCE.md). A zero-change adoption
+# plan touches none of them. Generated from infra/modules/workspace/main.tf.
+module.workspace.aws_vpc.this
+module.workspace.aws_subnet.this
+module.workspace.aws_internet_gateway.this
+module.workspace.aws_route_table.this
+module.workspace.aws_route_table_association.this
+module.workspace.aws_default_security_group.this
+module.workspace.aws_security_group.this
+module.workspace.aws_key_pair.this
+module.workspace.aws_instance.this
+module.workspace.aws_eip_association.this

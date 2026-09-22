@@ -1,0 +1,32 @@
+#cloud-config
+# Containers profile bootstrap (PROFILE-03, doc-18 §5) — the S4–S7 VM. Ubuntu
+# 24.04 on t3.medium. Adds Docker Engine + the Compose plugin ON TOP of the
+# foundations tools (git, uv, SSH already present); it deliberately does NOT
+# pre-solve the student Dockerfile, Compose file, release workflow or S6
+# recovery. Still EXCLUDES k3s, kubectl, eksctl/EKS/kind, Micromamba and heavy
+# notebook defaults — those arrive with the operations profile in S8.
+#
+# Rendered with the enrolled PUBLIC keys (authorized_keys); byte-identical file
+# across the controller and student roots. Idempotent: reapplying converges, and
+# an S6 rebuild from this same bootstrap recreates the same container platform.
+package_update: true
+packages:
+  - git
+  - curl
+  - ca-certificates
+  - unzip
+  - docker.io
+  - docker-compose-v2
+%{ if length(authorized_keys) > 0 ~}
+ssh_authorized_keys:
+%{ for key in authorized_keys ~}
+  - ${key}
+%{ endfor ~}
+%{ endif ~}
+runcmd:
+  # uv (Astral) carried over from foundations — pinned installer, once.
+  - [ cloud-init-per, once, dbai-uv, sh, -c, "curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh" ]
+  # Docker daemon on at boot, and let the student user drive it without sudo.
+  - [ cloud-init-per, once, dbai-docker-enable, systemctl, enable, --now, docker ]
+  - [ cloud-init-per, once, dbai-docker-group, usermod, -aG, docker, ubuntu ]
+  - [ cloud-init-per, once, dbai-marker, sh, -c, "echo containers > /etc/dbai-profile && echo dbai-workspace-bootstrap > /etc/dbai-bootstrap" ]
