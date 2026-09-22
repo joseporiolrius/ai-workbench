@@ -154,6 +154,7 @@ resource "aws_instance" "this" {
   # inputs render an equal result (RECOVERY-02).
   user_data = templatefile(var.bootstrap_template_path, {
     authorized_keys = local.authorized_keys
+    k3s_enabled     = var.k3s_enabled
   })
 
   root_block_device {

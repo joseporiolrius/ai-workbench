@@ -56,6 +56,7 @@ module "workspace" {
   eip_allocation_id          = var.eip_allocation_id
   bootstrap_template_path    = coalesce(var.bootstrap_template_path, "${path.root}/cloud-init.yaml")
   instance_type              = var.instance_type
+  k3s_enabled                = var.k3s_enabled
   app_ingress_cidrs          = var.app_ingress_cidrs
   cost_tags                  = var.cost_tags
 }

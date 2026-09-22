@@ -64,3 +64,9 @@ variable "cost_tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "k3s_enabled" {
+  description = "S8: enable the pinned k3s platform on the operations (t3.large) phase."
+  type        = bool
+  default     = false
+}

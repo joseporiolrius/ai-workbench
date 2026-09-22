@@ -17,3 +17,7 @@ ssh_public_key_path = "/absolute/path/to/dbai.pub"  # your controller-local SSH 
 # instructor_public_key_path = "/absolute/path/to/instructor.pub"
 # my_ip_cidr                 = "203.0.113.4/32"
 # app_ingress_cidrs          = ["203.0.113.4/32"]
+
+# --- S8 operations phase (k3s) ---
+# instance_type = "t3.large"   # S8 uses the larger operations instance
+# k3s_enabled   = true         # install the pinned k3s + kubectl + Helm at S8

@@ -29,4 +29,14 @@ runcmd:
   # Docker daemon on at boot, and let the student user drive it without sudo.
   - [ cloud-init-per, once, dbai-docker-enable, systemctl, enable, --now, docker ]
   - [ cloud-init-per, once, dbai-docker-group, usermod, -aG, docker, ubuntu ]
+%{ if k3s_enabled ~}
+  # S8 (k3s_enabled): pinned single-node k3s + kubectl + Helm (matches the
+  # ec2-console operations profile, PROFILE-04). --write-kubeconfig-mode 644 gives
+  # the student sudo-less kubectl.
+  - [ cloud-init-per, once, dbai-k3s, sh, -c, "curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.30.5+k3s1 INSTALL_K3S_EXEC='--write-kubeconfig-mode 644' sh -" ]
+  - [ cloud-init-per, once, dbai-kubectl, sh, -c, "ln -sf /usr/local/bin/k3s /usr/local/bin/kubectl" ]
+  - [ cloud-init-per, once, dbai-helm, sh, -c, "cd /tmp && curl -fsSLO https://get.helm.sh/helm-v3.15.4-linux-amd64.tar.gz && echo '11400fecfc07fd6f034863e4e0c4c4445594673fd2a129e701fe41f31170cfa9  helm-v3.15.4-linux-amd64.tar.gz' | sha256sum -c - && tar xzf helm-v3.15.4-linux-amd64.tar.gz && install -m0755 linux-amd64/helm /usr/local/bin/helm" ]
+  - [ cloud-init-per, once, dbai-marker, sh, -c, "echo operations > /etc/dbai-profile && echo dbai-workspace-bootstrap > /etc/dbai-bootstrap" ]
+%{ else ~}
   - [ cloud-init-per, once, dbai-marker, sh, -c, "echo containers > /etc/dbai-profile && echo dbai-workspace-bootstrap > /etc/dbai-bootstrap" ]
+%{ endif ~}

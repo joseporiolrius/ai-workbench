@@ -94,3 +94,9 @@ variable "cost_tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "k3s_enabled" {
+  description = "S8 boundary: install the pinned single-node k3s + kubectl + Helm. Absent before S8."
+  type        = bool
+  default     = false
+}
