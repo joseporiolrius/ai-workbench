@@ -1,0 +1,37 @@
+# S4 workbench stack (WB-04) — pi-web-ui + Qdrant, from the qualified immutable
+# course images. Both bound to loopback on the VM; the UI is reached over an SSH
+# tunnel. Add only your COURSE_VIRTUAL_KEY in .env; no other secret lives here.
+services:
+  pi-web-ui:
+    image: ghcr.io/oriolrius/pi-web-ui:1.0.0
+    environment:
+      PI_WEB_HOST: "0.0.0.0"
+      PI_WEB_PORT: "8787"
+      PI_CODING_AGENT_DIR: /app/.pi-config
+      COURSE_VIRTUAL_KEY: ${COURSE_VIRTUAL_KEY:?set your student virtual key in .env}
+    volumes:
+      - ./pi-config:/app/.pi-config:ro       # models.json (gateway + key ref)
+      - pi-data:/app/.pi-web                  # per-client chat sessions
+    ports:
+      - "127.0.0.1:8787:8787"                # loopback only — reach via SSH tunnel
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8787/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+  qdrant:
+    image: ghcr.io/oriolrius/qdrant:v1.15.0
+    volumes:
+      - qdrant-data:/qdrant/storage
+    ports:
+      - "127.0.0.1:6333:6333"                # loopback only
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/6333 && printf 'GET /healthz HTTP/1.0\r\n\r\n' >&3 && grep -q '200 OK' <&3"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+volumes:
+  pi-data:
+  qdrant-data:

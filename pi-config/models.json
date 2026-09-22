@@ -1,0 +1,13 @@
+{
+  "providers": [
+    {
+      "name": "course-gateway",
+      "type": "openai",
+      "baseUrl": "https://litellm.joor.net/v1",
+      "apiKeyEnv": "COURSE_VIRTUAL_KEY"
+    }
+  ],
+  "models": [
+    { "id": "claude-haiku-free", "provider": "course-gateway", "alias": "course-chat" }
+  ]
+}
