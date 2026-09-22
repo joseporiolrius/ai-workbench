@@ -34,3 +34,4 @@ id_*
 .env.*
 aws_credentials.yaml
 credentials
+!.env.example
