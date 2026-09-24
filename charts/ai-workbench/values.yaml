@@ -1,0 +1,36 @@
+# Course-provided defaults. Students override ONLY these in my-values.yaml — they
+# never author chart templates.
+ui:
+  image: ghcr.io/oriolrius/pi-web-ui:1.0.0      # pinned qualified fork (WB-01)
+  configDir: /app/.pi-config
+  port: 8787
+  buildLabel: s9-deploy-1         # where the UI mounts models.json
+qdrant:
+  # v1.15.5: v1.15.0 (WB-03) panics on GET /metrics with an empty store (fixed in
+  # 1.15.1) and S10 scrapes it, so S9+ pins the latest 1.15 patch (same storage format).
+  image: ghcr.io/oriolrius/qdrant:v1.15.5@sha256:0fb8897412abc81d1c0430a899b9a81eb8328aa634e7242d1bc804c1fe8fe863
+  # S10: set the prometheus.io/{scrape,port,path} annotations here in my-values.yaml
+  # so Prometheus discovers Qdrant's native /metrics (port 6333). Empty = not scraped.
+  podAnnotations: {}
+  persistence:
+    enabled: true
+    storageClass: local-path
+    size: 2Gi                                    # S9 baseline PVC
+# The UI reads COURSE_VIRTUAL_KEY from an EXISTING secret (never in values/Git).
+existingKeysSecret: workbench-keys
+# models.json provider block rendered into the workbench-models-json ConfigMap.
+modelsJson:
+  provider: litellm
+  baseUrl: https://litellm.joor.net
+  model: course-chat        # nan.builders deepseek-v4-flash on the course gateway (flat rate)
+ingress:
+  enabled: false
+  host: ""                                       # e.g. wb.<IP>.sslip.io
+  basicAuth:
+    enabled: false
+    secretName: workbench-basic-auth             # imperatively created (bcrypt htpasswd)
+# Default-DISABLED extension interface (search_docs); enabled by later sessions
+# via values only — no student chart-template edits.
+extension:
+  enabled: false
+  configMap: workbench-extension

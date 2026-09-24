@@ -20,3 +20,9 @@ authored in earlier sessions, and it does **not** introduce the S8-only
 
 Controller-owned state, credentials and private keys are never committed here
 (see [`.gitignore`](./.gitignore)).
+
+## S9 — Helm chart and CD helpers (`starter-s09-v1.0.0`)
+
+`charts/ai-workbench/` (course chart, consumed), `scripts/with-release.sh` + `scripts/deploy.sh`
+(exact-SHA release + atomic deploy with receipt) and `course-artifacts.yaml`. You author
+`my-values.yaml` and `.github/workflows/deploy.yml`. See [`docs/STARTER-S09.md`](./docs/STARTER-S09.md).

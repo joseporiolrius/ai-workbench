@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-models-json
+data:
+  models.json: |
+    {
+      "provider": {{ .Values.modelsJson.provider | quote }},
+      "baseUrl": {{ .Values.modelsJson.baseUrl | quote }},
+      "model": {{ .Values.modelsJson.model | quote }}
+    }

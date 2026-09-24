@@ -1,0 +1,9 @@
+{{- if .Values.extension.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.extension.configMap }}
+data:
+  search_docs.json: |
+    { "enabled": true }
+{{- end }}

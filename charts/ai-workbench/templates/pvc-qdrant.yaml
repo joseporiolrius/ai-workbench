@@ -1,0 +1,12 @@
+{{- if .Values.qdrant.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-qdrant
+spec:
+  accessModes: [ ReadWriteOnce ]
+  storageClassName: {{ .Values.qdrant.persistence.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.qdrant.persistence.size }}
+{{- end }}

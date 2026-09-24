@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-pi-web-ui
+  labels: { app: {{ .Release.Name }}-pi-web-ui }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: {{ .Release.Name }}-pi-web-ui } }
+  template:
+    metadata:
+      labels: { app: {{ .Release.Name }}-pi-web-ui }
+    spec:
+      containers:
+        - name: pi-web-ui
+          image: {{ .Values.ui.image | quote }}
+          ports: [ { containerPort: {{ .Values.ui.port }} } ]
+          env:
+            - name: UI_BUILD_LABEL
+              value: {{ .Values.ui.buildLabel | quote }}
+            - name: PI_WEB_HOST
+              value: "0.0.0.0"
+            - name: PI_WEB_PORT
+              value: {{ .Values.ui.port | quote }}
+            - name: PI_CODING_AGENT_DIR
+              value: {{ .Values.ui.configDir | quote }}
+            - name: COURSE_VIRTUAL_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.existingKeysSecret }}
+                  key: COURSE_VIRTUAL_KEY
+          volumeMounts:
+            - name: models
+              mountPath: {{ .Values.ui.configDir }}/models.json
+              subPath: models.json
+          readinessProbe:
+            httpGet: { path: /health, port: {{ .Values.ui.port }} }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /health, port: {{ .Values.ui.port }} }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: models
+          configMap: { name: {{ .Release.Name }}-models-json }

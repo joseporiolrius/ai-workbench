@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-pi-web-ui
+spec:
+  selector: { app: {{ .Release.Name }}-pi-web-ui }
+  ports: [ { port: 80, targetPort: {{ .Values.ui.port }} } ]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-qdrant
+spec:
+  selector: { app: {{ .Release.Name }}-qdrant }
+  ports: [ { port: 6333, targetPort: 6333 } ]

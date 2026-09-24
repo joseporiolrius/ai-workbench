@@ -1,0 +1,75 @@
+# ai-workbench course artifact manifest — S9 increment (STARTER-11).
+# Schema: dbai/course-artifacts/v1 (esade-devops contracts/course-artifacts.schema.md).
+# The images and gateway alias the S9 chart (charts/ai-workbench, in this tree) is
+# qualified with. Later increments (S10 monitoring, S12 retrieval) ADD records here.
+schema: dbai/course-artifacts/v1
+baseline_version: "1.0.0"
+
+artifacts:
+  # Two visibly distinct course UI builds from the same pinned fork revision (WB-01/02):
+  # 1.0.0 shows build label course-1.0.0, 1.1.0 shows course-1.1.0. S9 upgrades 1.0.0 ->
+  # 1.1.0 with an image-only commit and reverts it; both tags are immutable.
+  - id: image-pi-web-ui-1.0.0
+    kind: image
+    status: qualified
+    identity:
+      source_repo: oriolrius/pi-web-ui
+      source_sha: 3591e494639661dd6cff565e4e199243183c0fe0
+      image_ref: ghcr.io/oriolrius/pi-web-ui:1.0.0
+      digest: sha256:705d739a93f9494dcfca715bada746e47a617224706870c8552348b6d01cf7d3
+      visible_label: course-1.0.0
+    evidence:
+      - source_revision: oriolrius/pi-web-ui@3591e494639661dd6cff565e4e199243183c0fe0 (tag course-v0.94.1)
+        artifact_revision: "sha256:705d739a93f9494dcfca715bada746e47a617224706870c8552348b6d01cf7d3"
+        scenario: "published, anonymous pull on amd64, /health 200, OCI label org.opencontainers.image.version=course-1.0.0 (WB-02); deployed by the S9 chart (WB-06/WB-11)"
+        command_or_interaction: docker buildx imagetools inspect ghcr.io/oriolrius/pi-web-ui:1.0.0
+        observed_result: "digest sha256:705d739a…; labels course.build=1, version course-1.0.0"
+        time_utc: "2026-09-24T15:00:00Z"
+        limitation: amd64 exercised
+  - id: image-pi-web-ui-1.1.0
+    kind: image
+    status: qualified
+    identity:
+      source_repo: oriolrius/pi-web-ui
+      source_sha: 3591e494639661dd6cff565e4e199243183c0fe0
+      image_ref: ghcr.io/oriolrius/pi-web-ui:1.1.0
+      digest: sha256:543f2af318ef9193ceb342ea76939e1dd47de91ec49339e0d7404d786ed19433
+      visible_label: course-1.1.0
+    evidence:
+      - source_revision: oriolrius/pi-web-ui@3591e494639661dd6cff565e4e199243183c0fe0 (tag course-v0.94.1)
+        artifact_revision: "sha256:543f2af318ef9193ceb342ea76939e1dd47de91ec49339e0d7404d786ed19433"
+        scenario: "published, anonymous pull on amd64, /health 200, OCI label org.opencontainers.image.version=course-1.1.0 (WB-02)"
+        command_or_interaction: docker buildx imagetools inspect ghcr.io/oriolrius/pi-web-ui:1.1.0
+        observed_result: "digest sha256:543f2af3…; labels course.build=2, version course-1.1.0"
+        time_utc: "2026-09-24T15:00:00Z"
+        limitation: amd64 exercised
+  - id: image-qdrant
+    kind: image
+    status: qualified
+    identity:
+      source_repo: qdrant/qdrant
+      source_sha: 48203e414e4e7f639a6d394fb6e4df695f808e51
+      image_ref: ghcr.io/oriolrius/qdrant:v1.15.5
+      digest: sha256:0fb8897412abc81d1c0430a899b9a81eb8328aa634e7242d1bc804c1fe8fe863
+    evidence:
+      - source_revision: oriolrius/ai-workbench chart 0.2.0 (qdrant pin)
+        artifact_revision: "sha256:0fb8897412abc81d1c0430a899b9a81eb8328aa634e7242d1bc804c1fe8fe863"
+        scenario: "in-place upgrade from v1.15.0 on the 2Gi local-path PVC; health + /metrics (MON-04)"
+        command_or_interaction: helm upgrade workbench ./charts/ai-workbench -f my-values.yaml
+        observed_result: "Qdrant healthy, PVC data kept"
+        time_utc: "2026-09-23T18:27:24Z"
+        limitation: amd64 exercised
+  # The only LLM credential in the cluster is the student's virtual key (Secret workbench-keys);
+  # the chart's models.json points at this alias on the professor gateway (nan.builders only).
+  - id: gateway-course-chat
+    kind: gateway_alias
+    status: qualified
+    identity: { alias: course-chat, model: nan.builders/deepseek-v4-flash, embedding_dimension: n/a-chat }
+    evidence:
+      - source_revision: esade-devops gateway/course-aliases.sh (course-chat)
+        artifact_revision: "course-chat -> https://api.nan.builders/v1 deepseek-v4-flash"
+        scenario: "student key: chat + tool-call round trip"
+        command_or_interaction: POST /v1/chat/completions (student key)
+        observed_result: "served by https://api.nan.builders/v1, group course-chat"
+        time_utc: "2026-09-24T13:54:17Z"
+        limitation: gateway-level
