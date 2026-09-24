@@ -8,6 +8,13 @@
 # restores the prior working release.
 set -eu
 
+# CD runs arrive over a NON-login SSH session (GitHub Actions ssh-action), where
+# /etc/profile.d/dbai-kubeconfig.sh is not sourced. Fall back to the k3s kubeconfig
+# that the operations profile makes readable for the student user.
+if [ -z "${KUBECONFIG:-}" ] && [ -r /etc/rancher/k3s/k3s.yaml ]; then
+  export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+fi
+
 REL_SHA="${RELEASE_SHA:-$(git rev-parse HEAD)}"
 STATE="${RELEASE_STATE_DIR:-.}"
 NS="${WB_NAMESPACE:-workbench}"
