@@ -1,0 +1,71 @@
+# S10 — Prometheus (individual chart prometheus-community/prometheus, NOT
+# kube-prometheus-stack). Chart version and every image pin come from
+# ../course-artifacts.yaml via scripts/install-monitoring.sh — do not add image
+# settings here. No Operator, no ServiceMonitor, no Alertmanager, no Pushgateway.
+
+# --- what runs -------------------------------------------------------------
+alertmanager:
+  enabled: false            # a firing alert is the end state; nothing pages you
+prometheus-pushgateway:
+  enabled: false
+kube-state-metrics:
+  enabled: true             # pod/deployment state (kube_*), discovered via service annotation
+prometheus-node-exporter:
+  enabled: true             # node CPU/memory/disk (node_*)
+
+server:
+  global:
+    scrape_interval: 15s    # chart default is 1m — too coarse for a 2-minute alert and the LOAD FEST
+    evaluation_interval: 15s
+  retention: 7d
+  persistentVolume:
+    enabled: true
+    size: 8Gi
+    storageClass: local-path
+  resources:
+    requests: { cpu: 100m, memory: 384Mi }
+    limits: { memory: 1Gi }
+
+# The chart's default scrape jobs already cover: Prometheus itself, kubelet +
+# cAdvisor (container_*), service endpoints (kube-state-metrics, node-exporter)
+# and any pod annotated prometheus.io/scrape="true" (job kubernetes-pods) —
+# that last one is how Qdrant is found once you add its podAnnotations.
+
+# --- the black-box probe -----------------------------------------------------
+# The authenticated workbench URL (your S9 ingress, e.g. http://wb.<IP>.sslip.io/).
+# install-monitoring.sh fills this from the live workbench Ingress; it is not a
+# secret. The probe credentials live ONLY in Secret monitoring/workbench-probe-auth.
+workbenchProbe:
+  url: ""
+
+extraScrapeConfigs: |
+  - job_name: workbench-probe
+    metrics_path: /probe
+    params:
+      module: [workbench_authenticated]
+    static_configs:
+      - targets: [{{ required "workbenchProbe.url is required (the authenticated workbench URL)" .Values.workbenchProbe.url | quote }}]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-prometheus-blackbox-exporter:9115
+
+# --- the one alert ------------------------------------------------------------
+# A label is not a notification: with no Alertmanager installed, WorkbenchDown
+# becomes pending/firing in the Prometheus UI and pages nobody.
+serverFiles:
+  alerting_rules.yml:
+    groups:
+      - name: workbench
+        rules:
+          - alert: WorkbenchDown
+            expr: probe_success{job="workbench-probe"} == 0
+            for: 2m
+            labels:
+              severity: page
+            annotations:
+              summary: "Workbench is down (authenticated probe failing)"
+              description: "probe_success for {{ $labels.instance }} has been 0 for 2 minutes."

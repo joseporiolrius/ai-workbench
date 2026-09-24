@@ -26,3 +26,10 @@ Controller-owned state, credentials and private keys are never committed here
 `charts/ai-workbench/` (course chart, consumed), `scripts/with-release.sh` + `scripts/deploy.sh`
 (exact-SHA release + atomic deploy with receipt) and `course-artifacts.yaml`. You author
 `my-values.yaml` and `.github/workflows/deploy.yml`. See [`docs/STARTER-S09.md`](./docs/STARTER-S09.md).
+
+## S10 — monitoring (`starter-s10-v1.0.0`)
+
+Prometheus + blackbox exporter + Grafana as three pinned Helm releases, the authenticated
+`workbench-probe`, the `WorkbenchDown` rule and synthetic load fixtures. You add the Qdrant
+annotations, build and export the dashboard, and do the Grafana-route homework. See
+[`docs/STARTER-S10.md`](./docs/STARTER-S10.md) and [`monitoring/README.md`](./monitoring/README.md).

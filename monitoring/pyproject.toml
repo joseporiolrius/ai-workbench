@@ -1,0 +1,11 @@
+[project]
+name = "workbench-monitoring"
+version = "1.0.0"
+description = "S10 synthetic Qdrant workload (scripts/qdrant-load.py) — no embeddings, no gateway key"
+requires-python = ">=3.12"
+dependencies = [
+    "httpx==0.28.1",
+]
+
+[tool.uv]
+package = false

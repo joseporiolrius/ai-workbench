@@ -1,0 +1,36 @@
+# S10 — blackbox exporter (prometheus-community/prometheus-blackbox-exporter).
+# Chart version and image pin come from ../course-artifacts.yaml via
+# scripts/install-monitoring.sh. This file holds only PATHS to credentials —
+# never a username or password.
+
+config:
+  modules:
+    # Probe the workbench the way a user does: through Traefik, WITH the S9
+    # basic-auth credentials. 2xx from the backend = up. A 401 (wrong/rotated
+    # credentials) or a 5xx/404 (backend gone) = probe_success 0.
+    workbench_authenticated:
+      prober: http
+      timeout: 5s
+      http:
+        valid_status_codes: []          # default: any 2xx
+        preferred_ip_protocol: ip4
+        follow_redirects: false
+        basic_auth:
+          username_file: /etc/blackbox/auth/username
+          password_file: /etc/blackbox/auth/password
+
+# Secret monitoring/workbench-probe-auth (keys: username, password) is created
+# by the secret-entry procedure in monitoring/README.md, never from Git.
+extraSecretMounts:
+  - name: workbench-probe-auth
+    secretName: workbench-probe-auth
+    mountPath: /etc/blackbox/auth
+    readOnly: true
+    defaultMode: 0444          # exporter runs as nobody; files stay pod-local
+
+configReloader:
+  enabled: false
+
+resources:
+  requests: { cpu: 10m, memory: 32Mi }
+  limits: { memory: 128Mi }
