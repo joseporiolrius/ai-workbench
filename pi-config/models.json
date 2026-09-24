@@ -8,6 +8,6 @@
     }
   ],
   "models": [
-    { "id": "claude-haiku-free", "provider": "course-gateway", "alias": "course-chat" }
+    { "id": "course-chat", "provider": "course-gateway", "alias": "course-chat" }
   ]
 }
