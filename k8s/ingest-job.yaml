@@ -1,0 +1,57 @@
+# S12 candidate ingestion Job — SOURCE TEMPLATE. Do not kubectl-apply this file directly:
+# scripts/run-ingestion.sh <SHA> renders it (scripts/ingest_bundle.py fills every placeholder value
+# and mounts the revision bundle items) and creates/recreates it.
+#
+# - image: the qualified dependency-only ingestion image, pinned by digest (course-artifacts.yaml)
+# - /workspace: ConfigMap ingest-bundle-<SHA> = that revision's corpus, settings and ingestion source
+# - Qdrant through the in-cluster service; course key only through secretKeyRef (never in the bundle)
+# - backoffLimit 0: a failure is visible at once; retrying means re-running the helper (RAG-03 policy)
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ${JOB_NAME}
+  namespace: workbench
+  labels:
+    app.kubernetes.io/part-of: workbench-rag
+    course.dbai/revision: "${REVISION}"
+  annotations:
+    course.dbai/revision: "${REVISION}"
+    course.dbai/collection: "${COLLECTION}"
+    course.dbai/corpus-hash: "${CORPUS_HASH}"
+    course.dbai/bundle-hash: "${BUNDLE_HASH}"
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: ${DEADLINE_SECONDS}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/part-of: workbench-rag
+        course.dbai/revision: "${REVISION}"
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: ingest
+          image: ${IMAGE}
+          args: ["--docs", "docs/study-guides", "--collection", "${COLLECTION}", "--revision", "${REVISION}"]
+          env:
+            - name: QDRANT_URL
+              value: http://workbench-qdrant.workbench.svc:6333
+            - name: COURSE_VIRTUAL_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: workbench-keys
+                  key: COURSE_VIRTUAL_KEY
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits: { memory: 512Mi }
+          volumeMounts:
+            - name: bundle
+              mountPath: /workspace
+              readOnly: true
+      volumes:
+        - name: bundle
+          configMap:
+            name: ${CONFIGMAP}
+            # items: filled by the renderer (one key -> path per bundled file)

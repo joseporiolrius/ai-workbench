@@ -1,0 +1,39 @@
+# Retrieval golden set: question -> the study guide that must be retrieved.
+# The gate passes when the expected_source is in the top k results for at least
+# `threshold` of the questions (hit@3 >= 0.8: 8 of these 10).
+# Homework: APPEND your own entries with new ids; never edit or delete q01-q10.
+# Format and validation rules: docs/CORPUS.md
+version: 1
+threshold: 0.8
+k: 3
+questions:
+  - id: q01
+    question: "Why is a service bound to 127.0.0.1 unreachable from my laptop even when the security group allows the port?"
+    expected_source: docs/study-guides/session-02-operational-literacy.md
+  - id: q02
+    question: "How do branch protection and a required CI check stop a bad commit from reaching main?"
+    expected_source: docs/study-guides/session-03-git-ci.md
+  - id: q03
+    question: "Why is the pi-web-ui port bound to loopback and reached only through an SSH tunnel?"
+    expected_source: docs/study-guides/session-04-containers.md
+  - id: q04
+    question: "How does pushing a version tag trigger the pipeline that publishes the image to GHCR?"
+    expected_source: docs/study-guides/session-05-continuous-delivery.md
+  - id: q05
+    question: "Why must the Terraform state file never be committed to Git?"
+    expected_source: docs/study-guides/session-06-terraform-iac.md
+  - id: q06
+    question: "What is the difference between a liveness probe and a readiness probe?"
+    expected_source: docs/study-guides/session-08-kubernetes-i.md
+  - id: q07
+    question: "How does Traefik basic authentication protect the workbench ingress?"
+    expected_source: docs/study-guides/session-09-kubernetes-ii.md
+  - id: q08
+    question: "Why does the course install individual monitoring Helm charts instead of kube-prometheus-stack?"
+    expected_source: docs/study-guides/session-10-observability.md
+  - id: q09
+    question: "Why do training runs land in a local mlruns folder instead of the MLflow tracking server?"
+    expected_source: docs/study-guides/session-11-mlops-mlflow.md
+  - id: q10
+    question: "What happens to the retrieval gate when ingestion uses a decoy embedding model with the same vector dimension?"
+    expected_source: docs/study-guides/session-12-llmops-rag.md

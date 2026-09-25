@@ -1,0 +1,10 @@
+# S12 ingestion settings — versioned with the corpus; a release candidate is built from
+# exactly these values. Validated by ingestion/rag.py (unknown keys or bad values fail).
+#
+# embedding_model is the INGESTION alias only. Queries (search.py, the evaluator and the
+# search_docs tool) always embed with course-embed, fixed by course-artifacts.yaml › retrieval.
+embedding_model: course-embed
+collection_prefix: study_guides   # live alias = study_guides; candidates = study_guides_<suffix>
+chunk_size: 800                   # max characters per chunk (heading prefix included)
+chunk_overlap: 120                # characters repeated between consecutive chunks of one section
+top_k: 3                          # results returned per query (the gate scores hit@3)

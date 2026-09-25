@@ -18,8 +18,9 @@ qdrant:
     size: 2Gi                                    # S9 baseline PVC
 # The UI reads COURSE_VIRTUAL_KEY from an EXISTING secret (never in values/Git).
 existingKeysSecret: workbench-keys
-# models.json rendered into <release>-models-json in pi's schema (providers.<provider>: baseUrl,
-# api openai-completions, apiKey "$COURSE_VIRTUAL_KEY", models); the key stays in the Secret.
+# models.json rendered into the <release>-models-json ConfigMap in pi's schema
+# ({"providers": {<provider>: {baseUrl, api, apiKey: "$COURSE_VIRTUAL_KEY", models}}}).
+# The key itself stays in the Secret; pi resolves "$COURSE_VIRTUAL_KEY" from the pod env.
 modelsJson:
   provider: course
   baseUrl: https://litellm.joor.net/v1   # OpenAI-compatible course gateway
@@ -30,8 +31,11 @@ ingress:
   basicAuth:
     enabled: false
     secretName: workbench-basic-auth             # imperatively created (bcrypt htpasswd)
-# Default-DISABLED extension interface (search_docs); enabled by later sessions
-# via values only — no student chart-template edits.
-extension:
-  enabled: false
-  configMap: workbench-extension
+# pi agent extensions shipped with the chart (source: charts/ai-workbench/extensions/).
+# S12 enables search_docs in my-values.yaml — values only, no template edits.
+extensions:
+  search_docs:
+    enabled: false
+    collection: study_guides        # the LIVE Qdrant alias; never a candidate collection
+    topK: 3                         # S12 homework: set 1, ask three golden questions, restore 3
+    # The query embedding alias is fixed to course-embed inside the extension (course contract).

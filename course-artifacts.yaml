@@ -282,3 +282,105 @@ artifacts:
         observed_result: "OK ghcr.io/oriolrius/grafana@sha256:69a5d2d957ca0bba434c160dcd4f2d07de9d6c756a0ba10ae7f52b72ced1e4cc on node platform linux/amd64; EVIDENCE: PASS (6/6)"
         time_utc: "2026-09-23T18:02:45Z"
         limitation: "amd64 only exercised (course VM); other platforms are recorded from the upstream index, not run"
+
+  # ================================================================ S12 retrieval (STARTER-14)
+  - id: image-workbench-ingestion
+    kind: image
+    status: qualified
+    identity:
+      source_repo: oriolrius/ai-workbench
+      source_sha: 884b919b8ee7841865a979fc7fe3ae4cf404242d
+      image_ref: ghcr.io/oriolrius/workbench-ingestion:0.1.0
+      digest: sha256:9ffe55ae68afa5b0a04955b187fc6bf101df728ab2b074ca5b74fbb3d02a0d70
+      platforms: [linux/amd64]
+      lock_sha256: 6f4844cbac4519ea644f0c18facf3f5d32157982a0193b3aae9c3b814d41db83   # ingestion/uv.lock baked in
+      base: python:3.12-slim@sha256:2f17fc044b579bab302c2e8054d3a686e2cb9a83de48e70534b94cd8ebbe06a9
+    evidence:
+      - source_revision: oriolrius/ai-workbench@884b919b8ee7841865a979fc7fe3ae4cf404242d
+        artifact_revision: "sha256:9ffe55ae68afa5b0a04955b187fc6bf101df728ab2b074ca5b74fbb3d02a0d70"
+        scenario: "same digest runs three mounted bundles against pinned Qdrant v1.15.5 + live gateway; absent/unreadable bundle and lock drift"
+        command_or_interaction: "docker run -v <bundle>:/workspace:ro <image> --docs docs/study-guides --collection study_guides_bundle_<x> --revision <x>"
+        observed_result: "12 docs->163 chunks (corpus 8626868a), 13 docs->164 (bc10118b), chunk_size 600->231; missing/unreadable/lock-drift exit 2 before any write; anonymous pull by digest OK"
+        time_utc: "2026-09-24T19:53:23Z"
+        limitation: "workstation Docker"
+      - source_revision: oriolrius/ai-workbench@fcf13de3312d0f57bde59697671e9563016901c4
+        artifact_revision: "sha256:9ffe55ae68afa5b0a04955b187fc6bf101df728ab2b074ca5b74fbb3d02a0d70"
+        scenario: "course VM (ec2-console operations profile, t3.large eu-west-1, k3s v1.30.5+k3s1 containerd 1.7.21) pulls the public image by digest and runs it as a Pod with the exact-checkout ConfigMap bundle against workbench-qdrant + workbench-keys Secret"
+        command_or_interaction: "kubectl apply -f bundle-pod.json (ConfigMap ingest-smoke-<sha12> + Pod); kubectl logs; crictl inspecti"
+        observed_result: "pull OK linux/amd64 (69.6 MB); Pod Succeeded exit 0; same lock sha256 6f4844cb; 163 points, corpus 8626868a (= workstation), revision fcf13de; candidate evaluated hit@3 10/10 PASS"
+        time_utc: "2026-09-24T20:18:00Z"
+        limitation: "amd64 only (course VMs are x86_64 t3); the RAG-02 Job template/helper is M10"
+  - id: retrieval-extension-search-docs
+    kind: retrieval_extension
+    status: qualified
+    identity:
+      repo: oriolrius/ai-workbench
+      revision: 2208eb7762afda20b01f9320b38f94609ca90e26
+      hash: sha256:d9a9d83810cc467f7221c2938a0e5c466debd42b98f5954ef5dae05fdd2355c0   # charts/ai-workbench/extensions/search-docs/index.ts
+      path: charts/ai-workbench/extensions/search-docs/index.ts
+      chart_version: "0.3.0"
+      loader: "pi-web-ui 1.0.0 (pi SDK @earendil-works/pi-coding-agent 0.85.1) $PI_CODING_AGENT_DIR/extensions/search-docs/index.ts"
+      query_alias: course-embed
+      chat_alias: course-chat
+    evidence:
+      - source_revision: oriolrius/ai-workbench feat/m09-retrieval (extension sha256 d9a9d838…)
+        artifact_revision: "sha256:d9a9d83810cc467f7221c2938a0e5c466debd42b98f5954ef5dae05fdd2355c0"
+        scenario: "pinned pi-web-ui:1.0.0 container, extension mounted in PI_CODING_AGENT_DIR, alias study_guides -> evaluated candidate on pinned Qdrant v1.15.5, live gateway course-chat/course-embed"
+        command_or_interaction: "/app/node_modules/.bin/pi -p --mode json --model course/course-chat <question> (same SDK/loader as the web UI)"
+        observed_result: "course question -> search_docs -> session-06-terraform-iac.md cited; general question -> 0 tool calls; missing alias -> isError tool result, no key leak; extension absent -> no search_docs"
+        time_utc: "2026-09-24T20:08:27Z"
+        limitation: "pi CLI in the UI image (same SDK/loader as the UI)"
+      - source_revision: oriolrius/ai-workbench@83aa1dc (chart 0.3.0 deployed; extension sha256 d9a9d838… unchanged at fcf13de)
+        artifact_revision: "sha256:d9a9d83810cc467f7221c2938a0e5c466debd42b98f5954ef5dae05fdd2355c0"
+        scenario: "live k3s workbench on the operations VM; browser (headless Chrome) through Traefik basic-auth at wb.<EIP>.sslip.io; alias study_guides -> evaluated candidate study_guides_fcf13de…"
+        command_or_interaction: "pi-web-ui chat, model course/course-chat: course question and general question in new chats"
+        observed_result: "course question -> 3 search_docs cards (success) -> session-06-terraform-iac.md § State… cited in the answer; general question -> 'Canberra is the capital of Australia.' with no tool card; 401 without/wrong creds, 200 with"
+        time_utc: "2026-09-24T20:31:00Z"
+        limitation: "single-user UI; failure/disabled traces verified with the pi CLI json trace, not screenshots"
+  - id: gateway-course-embed
+    kind: gateway_alias
+    status: qualified
+    identity: { alias: course-embed, model: nan.builders/qwen3-embedding, embedding_dimension: 4096 }
+    evidence:
+      - source_revision: esade-devops gateway/course-aliases.sh; ai-workbench scripts/check-embedding-aliases.py
+        artifact_revision: "course-embed -> https://api.nan.builders/v1 qwen3-embedding, 4096"
+        scenario: "student key embeds a 4-doc/4-query probe set; evaluator query alias fixed by retrieval.evaluator_query_alias"
+        command_or_interaction: COURSE_VIRTUAL_KEY=… scripts/check-embedding-aliases.py verify
+        observed_result: "dim 4096; top-1 4/4; VERIFY: PASS"
+        time_utc: "2026-09-24T13:50:00Z"
+        limitation: "probe set here; golden-set score qualified separately: good 10/10 (retrieval.qualification, GATEWAY-10)"
+  - id: gateway-course-embed-decoy
+    kind: gateway_alias
+    status: qualified
+    identity: { alias: course-embed-decoy, model: nan.builders/qwen3-embedding+course_decoy-permutation(seed 1012), embedding_dimension: 4096 }
+    evidence:
+      - source_revision: oriolrius/y0-stack-litellm@95817bf course_decoy.py; esade-devops gateway/course-aliases.sh
+        artifact_revision: "course-embed-decoy -> https://api.nan.builders/v1 qwen3-embedding, permuted by the proxy callback, 4096"
+        scenario: "same length, different space; decoy-ingested docs queried with course-embed; dimension-mismatch alias (nan qwen3 at 1024) as a negative"
+        command_or_interaction: "scripts/check-embedding-aliases.py verify; fixture --ingestion-alias course-embed-decoy | dbai-dimtest-1024 (temporary)"
+        observed_result: "dim 4096; cross-alias cosine 0.002; decoy/decoy 4/4; decoy docs + course-embed queries 1/4 (chance); fixture VALID; 1024-d alias -> INVALID (dimension error)"
+        time_utc: "2026-09-24T13:52:00Z"
+        limitation: "probe set here; golden-set score qualified separately: decoy 2/10 < 0.8 (retrieval.qualification, GATEWAY-10)"
+
+# S12 retrieval embedding contract (GATEWAY-04). The evaluator ALWAYS queries with
+# evaluator_query_alias; a candidate's rag-settings.yaml may choose the decoy for
+# INGESTION (the sabotage drill) but can never change the query alias.
+retrieval:
+  gateway_base_url: https://litellm.joor.net/v1
+  evaluator_query_alias: course-embed
+  good_ingestion_alias: course-embed
+  decoy_ingestion_alias: course-embed-decoy
+  embedding_dimension: 4096
+  # GATEWAY-10 qualification of the frozen fixture (corpus + ten golden questions). Any change to
+  # the corpus, golden set, chunk settings, embedding aliases/mapping (incl. the decoy hook) or the
+  # chat alias requires re-running it (evals/QUALIFICATION.md). No exact decoy score is promised.
+  qualification:
+    status: qualified
+    fixture: { source: oriolrius/ai-workbench@fcf13de3312d0f57bde59697671e9563016901c4, corpus_hash: 8626868a064b8e1926d8ab57339fd0c2f410c8d004ca236b54950d6f66e1ba65, golden_set: evals/golden_set.yaml, questions: 10, k: 3, threshold: 0.8, chunks: 163 }
+    good:  { ingestion_alias: course-embed,       query_alias: course-embed, dimension: 4096, hits: 10, total: 10, passed: true }
+    decoy: { ingestion_alias: course-embed-decoy, query_alias: course-embed, dimension: 4096, hits: 2,  total: 10, passed: false }
+    gateway_mapping: "course-embed = nan.builders qwen3-embedding; course-embed-decoy = same model + y0-stack-litellm@95817bf course_decoy.py (seed 1012)"
+    ingestion_image: ghcr.io/oriolrius/workbench-ingestion:0.1.0@sha256:9ffe55ae68afa5b0a04955b187fc6bf101df728ab2b074ca5b74fbb3d02a0d70
+    environment: "ec2-console operations profile (t3.large eu-west-1), k3s v1.30.5+k3s1, chart ai-workbench 0.3.0, workbench-qdrant ghcr.io/oriolrius/qdrant:v1.15.5"
+    time_utc: "2026-09-24T20:18:00Z"
+    reverified: "2026-09-25 single-text embedding (gateway batch-misorder fix, ai-workbench 66efa27): good 10/10, decoy 2/10, 0/165 misaligned live vectors; CD fixture oriolrius/dbai24-s12-fixture deploy-12.7"

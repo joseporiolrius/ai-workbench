@@ -33,3 +33,10 @@ Prometheus + blackbox exporter + Grafana as three pinned Helm releases, the auth
 `workbench-probe`, the `WorkbenchDown` rule and synthetic load fixtures. You add the Qdrant
 annotations, build and export the dashboard, and do the Grafana-route homework. See
 [`docs/STARTER-S10.md`](./docs/STARTER-S10.md) and [`monitoring/README.md`](./monitoring/README.md).
+
+## S12 — retrieval and gated corpus release (`starter-s12-v1.0.0`)
+
+The study-guide corpus, readable ingestion/search, the retrieval evaluator, the chart's
+`search_docs` extension (0.3.0, off by default) and the release helpers that make a corpus change
+reach the live `study_guides` alias only through `ingest → retrieval-eval → deploy`. See
+[`docs/STARTER-S12.md`](./docs/STARTER-S12.md) and [`docs/RAG_RELEASE.md`](./docs/RAG_RELEASE.md).

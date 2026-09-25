@@ -39,3 +39,9 @@ credentials
 # pi agent runtime state written into the writable pi-config mount (only models.json is versioned)
 pi-config/*
 !pi-config/models.json
+
+# S12: uv virtual environments and Python caches (ingestion/, evals/)
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/

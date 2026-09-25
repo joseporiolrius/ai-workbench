@@ -3,6 +3,20 @@
 All notable changes to the DBAI **ai-workbench** course project are documented
 here. This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [starter-s12-v1.0.0] — S12 retrieval and gated corpus release (STARTER-14)
+
+### Added
+- Corpus `docs/study-guides/` (12 guides) + `docs/CORPUS.md`; `evals/` golden set, gate and qualification.
+- `ingestion/` locked project (ingest/search/rag/corpus + tests, image source), `rag-settings.yaml`.
+- `k8s/ingest-job.yaml` and release helpers: `ingest_bundle.py`, `run-ingestion.sh`, `run-eval.sh`,
+  `receipt.py`, `promote-corpus.sh`, `corpus_alias.py`, `production-lock.sh`,
+  `recover-production.sh`, `qdrant-forward.sh`, `smoke_release.py`; runbook `docs/RAG_RELEASE.md`.
+- `course-artifacts.yaml`: ingestion image, `search_docs` extension, embedding aliases, `retrieval:`.
+
+### Changed
+- Chart `ai-workbench` 0.2.1 → 0.3.0: `extensions.search_docs` (default off).
+- `scripts/deploy.sh`: receipt gate + Helm + alias promotion + smoke test, with compensation.
+
 ## [starter v1.2.0] - 2026-09-25
 
 ### Fixed

@@ -10,7 +10,9 @@ spec:
     metadata:
       labels: { app: {{ .Release.Name }}-pi-web-ui }
       annotations:
+        # roll the pod when models.json or the extension changes
         checksum/models: {{ include (print $.Template.BasePath "/configmap-models.yaml") . | sha256sum }}
+        checksum/search-docs: {{ include (print $.Template.BasePath "/configmap-search-docs.yaml") . | sha256sum }}
     spec:
       containers:
         - name: pi-web-ui
@@ -37,6 +39,11 @@ spec:
             - name: models
               mountPath: {{ .Values.ui.configDir }}/models.json
               subPath: models.json
+            {{- if .Values.extensions.search_docs.enabled }}
+            - name: search-docs
+              mountPath: {{ .Values.ui.configDir }}/extensions/search-docs
+              readOnly: true
+            {{- end }}
           readinessProbe:
             httpGet: { path: /api/health, port: {{ .Values.ui.port }} }
             initialDelaySeconds: 5
@@ -50,3 +57,7 @@ spec:
           emptyDir: {}
         - name: models
           configMap: { name: {{ .Release.Name }}-models-json }
+        {{- if .Values.extensions.search_docs.enabled }}
+        - name: search-docs
+          configMap: { name: {{ .Release.Name }}-search-docs }
+        {{- end }}

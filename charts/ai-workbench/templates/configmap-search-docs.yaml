@@ -1,0 +1,19 @@
+{{- if .Values.extensions.search_docs.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-search-docs
+  annotations:
+    course.dbai/extension-sha256: {{ .Files.Get "extensions/search-docs/index.ts" | sha256sum }}
+data:
+  index.ts: |
+{{ .Files.Get "extensions/search-docs/index.ts" | indent 4 }}
+  config.json: |
+    {
+      "collection": {{ .Values.extensions.search_docs.collection | quote }},
+      "qdrantUrl": "http://{{ .Release.Name }}-qdrant:6333",
+      "gatewayBaseUrl": {{ .Values.modelsJson.baseUrl | quote }},
+      "topK": {{ .Values.extensions.search_docs.topK | int }},
+      "keyEnv": "COURSE_VIRTUAL_KEY"
+    }
+{{- end }}
