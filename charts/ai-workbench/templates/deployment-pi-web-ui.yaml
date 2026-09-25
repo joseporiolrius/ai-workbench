@@ -9,6 +9,8 @@ spec:
   template:
     metadata:
       labels: { app: {{ .Release.Name }}-pi-web-ui }
+      annotations:
+        checksum/models: {{ include (print $.Template.BasePath "/configmap-models.yaml") . | sha256sum }}
     spec:
       containers:
         - name: pi-web-ui
@@ -29,17 +31,22 @@ spec:
                   name: {{ .Values.existingKeysSecret }}
                   key: COURSE_VIRTUAL_KEY
           volumeMounts:
+            # pi writes auth.json and sessions/ into its config dir: it must be writable.
+            - name: pi-config
+              mountPath: {{ .Values.ui.configDir }}
             - name: models
               mountPath: {{ .Values.ui.configDir }}/models.json
               subPath: models.json
           readinessProbe:
-            httpGet: { path: /health, port: {{ .Values.ui.port }} }
+            httpGet: { path: /api/health, port: {{ .Values.ui.port }} }
             initialDelaySeconds: 5
             periodSeconds: 5
           livenessProbe:
-            httpGet: { path: /health, port: {{ .Values.ui.port }} }
+            httpGet: { path: /api/health, port: {{ .Values.ui.port }} }
             initialDelaySeconds: 10
             periodSeconds: 10
       volumes:
+        - name: pi-config
+          emptyDir: {}
         - name: models
           configMap: { name: {{ .Release.Name }}-models-json }

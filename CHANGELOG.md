@@ -6,6 +6,8 @@ here. This project adheres to [Semantic Versioning](https://semver.org/).
 ## [starter v1.2.0] - 2026-09-25
 
 ### Fixed
+- S9 chart **0.2.1**: `models.json` in pi's schema, a writable `emptyDir` pi config dir, and
+  `/api/health` probes (chart 0.2.0's UI chat could not reply).
 - `pi-config/models.json` now uses the schema of the pinned pi agent SDK (0.85.1):
   `providers.course {baseUrl, api: openai-completions, apiKey: "$COURSE_VIRTUAL_KEY",
   models: [course-chat]}`. The previous `providers: [...]` + `apiKeyEnv` form was

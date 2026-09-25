@@ -18,10 +18,11 @@ qdrant:
     size: 2Gi                                    # S9 baseline PVC
 # The UI reads COURSE_VIRTUAL_KEY from an EXISTING secret (never in values/Git).
 existingKeysSecret: workbench-keys
-# models.json provider block rendered into the workbench-models-json ConfigMap.
+# models.json rendered into <release>-models-json in pi's schema (providers.<provider>: baseUrl,
+# api openai-completions, apiKey "$COURSE_VIRTUAL_KEY", models); the key stays in the Secret.
 modelsJson:
-  provider: litellm
-  baseUrl: https://litellm.joor.net
+  provider: course
+  baseUrl: https://litellm.joor.net/v1   # OpenAI-compatible course gateway
   model: course-chat        # nan.builders deepseek-v4-flash on the course gateway (flat rate)
 ingress:
   enabled: false
