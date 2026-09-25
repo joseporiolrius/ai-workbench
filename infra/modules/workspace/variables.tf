@@ -100,3 +100,28 @@ variable "k3s_enabled" {
   type        = bool
   default     = false
 }
+
+# Profile-driven inputs added with operations-0.3.0 (PROFILE-11). Their defaults
+# reproduce the earlier resources exactly (25 GB, no port 80), so existing
+# environments and vendored copies plan zero changes.
+variable "root_volume_gb" {
+  description = "Root gp3 volume size in GB (operations-0.3.0: 30)."
+  type        = number
+  default     = 25
+  validation {
+    condition     = var.root_volume_gb >= 25 && var.root_volume_gb <= 100
+    error_message = "root_volume_gb must be between 25 and 100."
+  }
+}
+
+variable "web_ingress_cidrs" {
+  description = "Explicit CIDRs allowed on TCP 80 (the S9 ingress rule). Empty = port 80 closed."
+  type        = list(string)
+  default     = []
+}
+
+variable "web_ingress_self" {
+  description = "Also allow TCP 80 from the VM's own EIP (/32) so in-cluster probes reaching wb.<EIP>.sslip.io work."
+  type        = bool
+  default     = false
+}

@@ -24,6 +24,16 @@ locals {
     var.app_ingress_cidrs,
   )))
 
+  # Web (port 80) ingress, S9+. web_ingress_cidrs is the student's explicit S9
+  # rule (doc-11 Part B). web_ingress_self adds the VM's OWN public address:
+  # in-cluster probes that target wb.<EIP>.sslip.io (S10 blackbox) and the S12
+  # release smoke leave the VM and re-enter through the EIP (hairpin), so
+  # without it they fail whenever port 80 is limited to the student's laptop.
+  web_cidrs = distinct(concat(
+    var.web_ingress_cidrs,
+    var.web_ingress_self ? ["${data.aws_eip.this.public_ip}/32"] : [],
+  ))
+
   tags = merge({
     Project     = "ec2-console"
     Course      = "dbai"
@@ -46,6 +56,11 @@ data "aws_ami" "ubuntu" {
     name   = "virtualization-type"
     values = ["hvm"]
   }
+}
+
+# The consumed address (read-only; the address state owns it).
+data "aws_eip" "this" {
+  id = var.eip_allocation_id
 }
 
 # --- network ---------------------------------------------------------------
@@ -117,6 +132,18 @@ resource "aws_security_group" "this" {
     }
   }
 
+  # Web port 80 only for explicit CIDRs and, when enabled, the VM's own EIP.
+  dynamic "ingress" {
+    for_each = length(local.web_cidrs) > 0 ? [1] : []
+    content {
+      description = "Web port 80 (explicit CIDRs + own EIP hairpin)"
+      from_port   = 80
+      to_port     = 80
+      protocol    = "tcp"
+      cidr_blocks = local.web_cidrs
+    }
+  }
+
   egress {
     description = "All outbound"
     from_port   = 0
@@ -158,7 +185,7 @@ resource "aws_instance" "this" {
   })
 
   root_block_device {
-    volume_size = 25
+    volume_size = var.root_volume_gb
     volume_type = "gp3"
   }
 
