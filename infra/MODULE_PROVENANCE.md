@@ -8,7 +8,7 @@ reviewable without fetching a private repository during `terraform init`.
 |---|---|
 | Source repo | `oriolrius/ec2-console` |
 | Source path | `dbai/terraform/modules/workspace/` |
-| Pinned revision | `PENDING-EC2-CONSOLE-MERGE` (operations-0.3.0 inputs; previously `78281ae`) |
+| Pinned revision | `e6bae45c63a9fd56f41e0b4c8b5a9c97a9cdb2bf` (main, PR #21; previously `78281ae`) |
 | Provider | `hashicorp/aws ~> 5.0` (locked to 5.100.0 in `.terraform.lock.hcl`) |
 
 Because the module code and the `module "workspace"` block name match the
