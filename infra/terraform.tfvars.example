@@ -21,3 +21,10 @@ ssh_public_key_path = "/absolute/path/to/dbai.pub"  # your controller-local SSH 
 # --- S8 operations phase (k3s) ---
 # instance_type = "t3.large"   # S8 uses the larger operations instance
 # k3s_enabled   = true         # install the pinned k3s + kubectl + Helm at S8
+# From operations-0.3.0 (your VM was rebuilt at S8 with a 30 GB disk and the own-EIP port-80 rule).
+# Copy the values the controller recorded (console.sh status <id> -> inputs), or the plan is not zero-change:
+# root_volume_gb   = 30
+# web_ingress_self = true
+
+# --- S9: open port 80 for your workbench ingress (doc-11 Part B) ---
+# web_ingress_cidrs = ["0.0.0.0/0"]   # then lock the workbench with basic-auth
