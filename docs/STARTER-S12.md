@@ -21,6 +21,10 @@ Your `my-values.yaml`, `.github/workflows/deploy.yml`, `JOURNAL.md`, `evidence/*
 Compose, `pi-config/` and S10 dashboard/homework files are untouched.
 Retained-file check (instructor): `esade-devops scripts/check-starter-inventory.py --retained-check <repo> <before> <after>`.
 
+`scripts/smoke_release.py` asks the deployed agent with the provider/model from **your deployed**
+`models.json`. A `my-values.yaml` written against chart 0.2.0 (`modelsJson.provider: litellm`) is
+honoured as-is, so you do not need to edit it.
+
 The live corpus is never touched by the import. The Qdrant alias `study_guides` only changes
 when you promote an evaluated candidate (manual mode) or a `deploy-*` release passes its gate.
 
