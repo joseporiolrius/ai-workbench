@@ -8,7 +8,7 @@ reviewable without fetching a private repository during `terraform init`.
 |---|---|
 | Source repo | `oriolrius/ec2-console` |
 | Source path | `dbai/terraform/modules/workspace/` |
-| Pinned revision | `78281ae5d438c6aa50b6aa542d4976f03c9b9772` (main) |
+| Pinned revision | `PENDING-EC2-CONSOLE-MERGE` (operations-0.3.0 inputs; previously `78281ae`) |
 | Provider | `hashicorp/aws ~> 5.0` (locked to 5.100.0 in `.terraform.lock.hcl`) |
 
 Because the module code and the `module "workspace"` block name match the
@@ -24,3 +24,9 @@ containers-profile bootstrap template
 (`ec2-console dbai/profiles/containers/cloud-init.yaml.tftpl`):
 
     sha256(infra/cloud-init.yaml) = 137bb7d571dd0434ecb589a0d080a6e45b9f5a69efdb7425bb87a173d817829a
+
+**starter v1.3.0 re-vendor (operations-0.3.0).** The module gains `root_volume_gb`, `web_ingress_cidrs`
+and `web_ingress_self`. Their defaults reproduce the earlier resources, so an environment built
+before them still plans zero changes. A VM rebuilt at S8 with `operations-0.3.0` needs
+`root_volume_gb = 30` and `web_ingress_self = true` in your `terraform.tfvars`. The only local
+delta from the ec2-console module is still the S8 `k3s_enabled` template input.

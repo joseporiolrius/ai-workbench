@@ -70,3 +70,22 @@ variable "k3s_enabled" {
   type        = bool
   default     = false
 }
+
+# operations-0.3.0 (S8+, from starter v1.3.0): must equal what the controller applied.
+variable "root_volume_gb" {
+  description = "Root volume size in GB (25 before operations-0.3.0; 30 from operations-0.3.0)."
+  type        = number
+  default     = 25
+}
+
+variable "web_ingress_cidrs" {
+  description = "Explicit CIDRs allowed on TCP 80 (your S9 ingress rule)."
+  type        = list(string)
+  default     = []
+}
+
+variable "web_ingress_self" {
+  description = "Allow TCP 80 from the VM's own EIP so the S10 probe (wb.<EIP>.sslip.io) reaches Traefik."
+  type        = bool
+  default     = false
+}
