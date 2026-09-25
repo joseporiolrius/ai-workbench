@@ -32,7 +32,7 @@ scripts/check-starter-inventory.py --retained-check <repo> <before> <after>`.
 
 Input revisions: charts prometheus-community/prometheus 29.33.0, prometheus-blackbox-exporter
 11.18.0, grafana-community/grafana 13.2.5; six digest-pinned `ghcr.io/oriolrius` mirrors (see
-`course-artifacts.yaml`); workbench chart 0.2.0 (from S9, Qdrant v1.15.5); ec2-console
+`course-artifacts.yaml`); workbench chart 0.2.0 (from S9, Qdrant v1.15.5; starter v1.2.0 carries chart 0.2.1, see docs/STARTER-S09.md); ec2-console
 `operations-0.2.0`; gateway `course-chat` (nan.builders).
 
 ## You author in S10 (never shipped)
