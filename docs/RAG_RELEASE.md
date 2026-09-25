@@ -319,6 +319,12 @@ Re-running a tag made before this S12 tooling existed runs the S9 `deploy.sh`, w
 receipt gate and no alias step, and which wrote its record to `receipt.json`. Re-release old
 content on a new commit instead of re-running a pre-S12 tag.
 
+**Gateway rate limit during the smoke.** The course key allows a limited number of requests per
+minute, and the release's own ingestion has just used many of them. When the smoke's agent run
+fails **only** because the gateway answered HTTP 429, `smoke_release.py` waits for the key's window
+to reset (the gateway's `Limit resets at` time, at most 65 s, otherwise 20/40/60 s) and tries again,
+up to 3 more times. Any other smoke failure is final at once, and the release is compensated as above.
+
 ## 9. Classroom manual candidate (manual mode) versus release (SHA mode)
 
 | | **Manual mode** (S12 Part A/B, local practice) | **SHA mode** (release gate, Actions or `with-release`) |
