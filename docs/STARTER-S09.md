@@ -22,13 +22,13 @@ or `pi-config/`. Retained-file check (instructor): `esade-devops scripts/check-s
 
 | Path | What |
 |---|---|
-| `charts/ai-workbench/` | the course Helm chart **0.2.0**: pi-web-ui + Qdrant (2Gi local-path PVC), models ConfigMap, optional Ingress + Traefik basic-auth Middleware; `qdrant.podAnnotations` for S10. **Consumed, not authored.** |
+| `charts/ai-workbench/` | the course Helm chart **0.2.1**: pi-web-ui + Qdrant (2Gi local-path PVC), models ConfigMap, optional Ingress + Traefik basic-auth Middleware; `qdrant.podAnnotations` for S10. **Consumed, not authored.** |
 | `scripts/with-release.sh` | runs a command inside a clean worktree at an **exact commit SHA** (`~/releases/workbench/<sha>`); rejects dirty trees; never touches your interactive checkout |
 | `scripts/deploy.sh` | `helm upgrade --install workbench … -f my-values.yaml --atomic --wait` + a release receipt (SHA, chart, values hash, running images, readiness) |
 | `scripts/RELEASE_WORKTREES.md` | how the two helpers fit together |
 | `course-artifacts.yaml` | the tested inputs: UI images `ghcr.io/oriolrius/pi-web-ui:1.0.0` (label course-1.0.0) and `:1.1.0` (label course-1.1.0), Qdrant `ghcr.io/oriolrius/qdrant:v1.15.5`, gateway alias `course-chat` (nan.builders) — digests + evidence |
 
-Input revisions this increment was qualified with: chart `0.2.0`; images as in
+Input revisions this increment was qualified with: chart `0.2.0` (v1.0.0; v1.2.0 ships the 0.2.1 fix below); images as in
 `course-artifacts.yaml`; ec2-console **operations** profile (`operations-0.2.0`: t3.large,
 k3s v1.30.5+k3s1, kubectl v1.30.5, Helm v3.15.4); gateway `course-chat`.
 
@@ -43,3 +43,13 @@ k3s v1.30.5+k3s1, kubectl v1.30.5, Helm v3.15.4); gateway `course-chat`.
 
 Release discipline: commit workflow/helper changes and the **image-only** change
 (`ui.image` 1.0.0 → 1.1.0) **separately**, so reverting the image never removes your workflow.
+
+## v1.2.0 fix (2026-09-25)
+
+Chart **0.2.1** renders `models.json` in the schema the pinned pi agent (0.85.1) actually reads,
+`providers.course {baseUrl …/v1, api: openai-completions, apiKey: "$COURSE_VIRTUAL_KEY",
+models: [course-chat]}`. It also mounts a writable `emptyDir` as the pi config dir, because pi
+writes `auth.json` and `sessions/`, and it probes `/api/health`. Chart 0.2.0 rendered a
+`{provider, baseUrl, model}` file that pi ignored, so the UI chat could not reply. Upgrading is
+values-compatible: `helm upgrade workbench ./charts/ai-workbench -f my-values.yaml`.
+Chat sessions live in the pod and do not survive a pod restart.

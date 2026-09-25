@@ -12,8 +12,13 @@ cp .env.example .env            # paste ONLY your student COURSE_VIRTUAL_KEY (gi
 ```
 
 `pi-config/models.json` points the UI at the course gateway
-(`https://litellm.joor.net/v1`) and references `COURSE_VIRTUAL_KEY` — no key value
-is stored in the repo.
+(`https://litellm.joor.net/v1`, provider `course`, model `course-chat`) and references
+the key as `"apiKey": "$COURSE_VIRTUAL_KEY"`. pi reads the value from the container
+environment, so no key value is stored in the repo.
+
+`./pi-config` is mounted **writable**. pi stores its runtime state there (`auth.json`,
+`sessions/`), so your chats survive `docker compose down && up`. That runtime state is
+git-ignored; only `models.json` is versioned.
 
 ## Run + inspect
 
@@ -34,9 +39,9 @@ ssh -i dbai.pem -L 8787:127.0.0.1:8787 ubuntu@<VM_IP>
 ## Ports, health, persistence
 
 - `pi-web-ui` `127.0.0.1:8787`, `qdrant` `127.0.0.1:6333` — loopback only.
-- Health: pi-web-ui via `node` fetch of `/health`; Qdrant via a `bash` TCP probe
+- Health: pi-web-ui via `node` fetch of `/api/health`; Qdrant via a `bash` TCP probe
   of `/healthz` (the images have no `curl`/`wget`).
-- Named volumes `pi-data` + `qdrant-data` survive `docker compose down && up`.
+- Named volumes `pi-data` + `qdrant-data` and the `pi-config/` chat sessions survive `docker compose down && up`.
   **Never `down -v` in the normal lab** — that erases your data.
 
 ## Before retrieval (S12)

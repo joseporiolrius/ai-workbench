@@ -5,7 +5,12 @@ metadata:
 data:
   models.json: |
     {
-      "provider": {{ .Values.modelsJson.provider | quote }},
-      "baseUrl": {{ .Values.modelsJson.baseUrl | quote }},
-      "model": {{ .Values.modelsJson.model | quote }}
+      "providers": {
+        {{ .Values.modelsJson.provider | quote }}: {
+          "baseUrl": {{ .Values.modelsJson.baseUrl | quote }},
+          "api": "openai-completions",
+          "apiKey": "$COURSE_VIRTUAL_KEY",
+          "models": [ { "id": {{ .Values.modelsJson.model | quote }} } ]
+        }
+      }
     }
