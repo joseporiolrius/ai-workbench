@@ -53,3 +53,14 @@ writes `auth.json` and `sessions/`, and it probes `/api/health`. Chart 0.2.0 ren
 `{provider, baseUrl, model}` file that pi ignored, so the UI chat could not reply. Upgrading is
 values-compatible: `helm upgrade workbench ./charts/ai-workbench -f my-values.yaml`.
 Chat sessions live in the pod and do not survive a pod restart.
+
+## v1.3.0 (operations-0.3.0)
+
+- **Port 80 is now a Terraform input.** In `infra/terraform.tfvars` set
+  `web_ingress_cidrs = ["0.0.0.0/0"]` (doc-11 Part B), then `terraform apply`: one SG rule added,
+  nothing replaced.
+- **Own-EIP rule.** VMs rebuilt at S8 with `operations-0.3.0` also allow port 80 from the VM's own
+  address (`web_ingress_self = true`), so the S10 probe of `wb.<EIP>.sslip.io` reaches Traefik even
+  when you later restrict `web_ingress_cidrs` to your laptop.
+- **Disk.** The same profile has a 30 GB disk (`root_volume_gb = 30`).
+- **Copy both values into `terraform.tfvars`** so your plan stays zero-change.
