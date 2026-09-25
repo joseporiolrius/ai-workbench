@@ -1,13 +1,10 @@
 {
-  "providers": [
-    {
-      "name": "course-gateway",
-      "type": "openai",
+  "providers": {
+    "course": {
       "baseUrl": "https://litellm.joor.net/v1",
-      "apiKeyEnv": "COURSE_VIRTUAL_KEY"
+      "api": "openai-completions",
+      "apiKey": "$COURSE_VIRTUAL_KEY",
+      "models": [ { "id": "course-chat", "name": "Course chat (nan.builders)" } ]
     }
-  ],
-  "models": [
-    { "id": "course-chat", "provider": "course-gateway", "alias": "course-chat" }
-  ]
+  }
 }
