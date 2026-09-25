@@ -1,6 +1,6 @@
 # S12 starter increment — `starter-s12-v1.0.0`
 
-**Ref:** `starter-s12-v1.0.0` (annotated tag, descendant of `starter-s10-v1.2.0`). Immutable:
+**Ref:** `starter-s12-v1.0.0` (current fix: `starter-s12-v1.0.1`, below) (annotated tag, descendant of `starter-s10-v1.2.0`). Immutable:
 fixes ship as a new tag, never by moving this one.
 
 ## Import
@@ -60,3 +60,15 @@ Input revisions (qualified before this tag):
 - `docs/study-guides/session-13-defense-faq.md` in the stale-index drill (§12). The decoy
   `rag-settings.yaml` edit (§11) is reverted in a new commit.
 - Evidence under `evidence/s12/` and your journal.
+
+## v1.0.1 — `starter-s12-v1.0.1`
+
+- **Release smoke retries gateway rate limits.** If the smoke's agent run fails only because the
+  course gateway answered HTTP 429 (your ingestion has just used the key's per-minute quota), it waits
+  for the key's window to reset and tries again, up to 3 times. Any other failure is still final.
+  See `docs/RAG_RELEASE.md` §8.
+- **operations-0.3.0 infra inputs** (from `starter-s08/s09/s10-v1.3.0`): `root_volume_gb`,
+  `web_ingress_cidrs`, `web_ingress_self`. See `infra/MODULE_PROVENANCE.md`.
+
+Import: `git fetch upstream --tags && git merge starter-s12-v1.0.1`. Nothing else changes, and
+`starter-s12-v1.0.0` stays published.
