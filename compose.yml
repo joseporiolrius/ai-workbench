@@ -10,12 +10,12 @@ services:
       PI_CODING_AGENT_DIR: /app/.pi-config
       COURSE_VIRTUAL_KEY: ${COURSE_VIRTUAL_KEY:?set your student virtual key in .env}
     volumes:
-      - ./pi-config:/app/.pi-config:ro       # models.json (gateway + key ref)
+      - ./pi-config:/app/.pi-config          # models.json (gateway + key ref); WRITABLE: pi saves auth.json + sessions/ here (git-ignored)
       - pi-data:/app/.pi-web                  # per-client chat sessions
     ports:
       - "127.0.0.1:8787:8787"                # loopback only — reach via SSH tunnel
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:8787/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8787/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 15s
       timeout: 5s
       retries: 5

@@ -3,6 +3,17 @@
 All notable changes to the DBAI **ai-workbench** course project are documented
 here. This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [starter v1.2.0] - 2026-09-25
+
+### Fixed
+- `pi-config/models.json` now uses the schema of the pinned pi agent SDK (0.85.1):
+  `providers.course {baseUrl, api: openai-completions, apiKey: "$COURSE_VIRTUAL_KEY",
+  models: [course-chat]}`. The previous `providers: [...]` + `apiKeyEnv` form was
+  silently ignored ("No models available"), so the UI chat could not work.
+- `./pi-config` is mounted writable (pi writes `auth.json` and `sessions/`); runtime
+  files are git-ignored.
+- The pi-web-ui healthcheck probes `/api/health` (`/health` is the web app's fallback page).
+
 ## [0.1.0] - 2026-09-22
 
 First tagged starter. Establishes the repository and the **S6 Terraform
