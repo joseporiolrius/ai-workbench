@@ -14,7 +14,7 @@ my-values `modelsJson` override, e.g. the S9-era `provider: litellm`, is honoure
 Gateway rate limits: the course key is limited to a number of requests per minute, and the ingestion
 that just ran used the same key. pi does not retry an HTTP 429, so an attempt that failed ONLY
 because of a rate limit (429 / "rate limit" in the agent error, a tool error or stderr) is retried
-after the gateway's own "Limit resets at" time (capped at 65 s) or a 20/40/60 s backoff, up to
+after the gateway's own "Limit resets at" time (10-65 s) or a 20/40/60 s backoff, up to
 --rate-limit-retries times. Any other failure is final on the first attempt; nothing else is retried.
 
 Exit 0 = the intended release answers with its own corpus; 1 = anything else (reason printed).
@@ -37,6 +37,7 @@ RATE_LIMIT_RE = re.compile(r"\b429\b|rate.?limit", re.I)
 RESET_RE = re.compile(r"resets at:?\s*(\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2})", re.I)
 BACKOFF_S = (20, 40, 60)
 MAX_WAIT_S = 65
+MIN_WAIT_S = 10   # pi's own quick retries may already have used the stated window
 
 
 def deployed_model(namespace: str, deployment: str) -> str:
@@ -88,7 +89,7 @@ def rate_limit_wait(evidence: str, attempt: int, now: datetime | None = None) ->
         reset = datetime.fromisoformat(match.group(1).replace(" ", "T")).replace(tzinfo=timezone.utc)
         secs = int((reset - (now or datetime.now(timezone.utc))).total_seconds()) + 2
         if secs > 0:
-            return min(secs, MAX_WAIT_S)
+            return max(MIN_WAIT_S, min(secs, MAX_WAIT_S))
     return BACKOFF_S[min(attempt - 1, len(BACKOFF_S) - 1)]
 
 

@@ -64,3 +64,8 @@ def test_wait_is_capped_and_falls_back_to_backoff():
     past = datetime(2026, 9, 25, 17, 0, 0, tzinfo=timezone.utc)
     assert smoke.rate_limit_wait(LIMIT, 2, past) == smoke.BACKOFF_S[1]
     assert smoke.rate_limit_wait("HTTP 429", 9) == smoke.BACKOFF_S[-1]
+
+
+def test_wait_has_a_floor_when_the_reset_is_imminent():
+    now = datetime(2026, 9, 25, 16, 9, 57, tzinfo=timezone.utc)
+    assert smoke.rate_limit_wait(LIMIT, 1, now) == smoke.MIN_WAIT_S
