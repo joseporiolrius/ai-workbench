@@ -31,7 +31,9 @@ set `RAG_QUALIFICATION_BUDGET` and `RAG_QUALIFICATION_INTERVAL_SECONDS` to the a
 per-process call cap and minimum start interval. This switches embeddings to serial execution
 with no retries (including429/5xx/timeouts), stops on the first failure, and applies to the
 rendered ingestion Job and local evaluator. These controls do not change gateway quotas and
-do not reserve capacity against other users. Also set `SMOKE_RATE_LIMIT_RETRIES=0`; a429 is a stop condition, not evidence of successful deployment.
+do not reserve capacity against other users. Also set `SMOKE_RATE_LIMIT_RETRIES=0` (also disables SDK retries through isolated temporary
+project settings). For a separate instructor allocation, `WB_KEYS_SECRET` selects its existing
+Secret for ingestion/evaluation; use the same Secret in Helm `existingKeysSecret`; a429 is a stop condition, not evidence of successful deployment.
 Existing successful retrieval evidence may be reused only where its inputs are unchanged;
 never manufacture a receipt for a new SHA or skip the release gate.
 

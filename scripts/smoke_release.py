@@ -94,8 +94,12 @@ def rate_limit_wait(evidence: str, attempt: int, now: datetime | None = None) ->
 
 
 def run_agent(namespace: str, deployment: str, model: str, timeout: int) -> tuple[list[dict], str, int]:
+    command = 'cd /tmp && /app/node_modules/.bin/pi -p --no-session --mode json --model "$1" "$0"'
+    if os.environ.get("SMOKE_RATE_LIMIT_RETRIES") == "0":
+        # Isolated project settings disable SDK retries as well as the outer smoke retries.
+        command = 'd=$(mktemp -d /tmp/m12-smoke.XXXXXX) && trap \'rm -rf "$d"\' EXIT; mkdir -p "$d/.pi" && printf \'%s\\n\' \'{"retry":{"enabled":false,"maxRetries":0}}\' > "$d/.pi/settings.json" && cd "$d" && /app/node_modules/.bin/pi -p --no-session --mode json --model "$1" "$0"'
     cmd = ["kubectl", "-n", namespace, "exec", f"deploy/{deployment}", "--", "sh", "-c",
-           "cd /tmp && /app/node_modules/.bin/pi -p --no-session --mode json --model \"$1\" \"$0\"", QUESTION, model]
+           command, QUESTION, model]
     run = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
     events = [json.loads(line) for line in run.stdout.splitlines() if line.startswith("{")]
     return events, run.stderr, run.returncode

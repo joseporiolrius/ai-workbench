@@ -69,3 +69,18 @@ def test_wait_is_capped_and_falls_back_to_backoff():
 def test_wait_has_a_floor_when_the_reset_is_imminent():
     now = datetime(2026, 9, 25, 16, 9, 57, tzinfo=timezone.utc)
     assert smoke.rate_limit_wait(LIMIT, 1, now) == smoke.MIN_WAIT_S
+
+
+def test_zero_retry_rehearsal_disables_sdk_retry_in_isolated_project(monkeypatch):
+    from types import SimpleNamespace
+    import subprocess
+    monkeypatch.setenv("SMOKE_RATE_LIMIT_RETRIES", "0")
+    commands = []
+    def run(cmd, **kwargs):
+        commands.append(cmd)
+        return SimpleNamespace(stdout="", stderr="", returncode=0)
+    monkeypatch.setattr(smoke.subprocess, "run", run)
+    smoke.run_agent("workbench", "workbench-pi-web-ui", "course/course-chat", 30)
+    command = commands[0][commands[0].index("-c") + 1]
+    assert '"retry":{"enabled":false,"maxRetries":0}' in command
+    assert 'mktemp -d' in command and 'trap' in command

@@ -39,7 +39,7 @@ if [ "$mode" = release ]; then target=(--sha "$sha"); else target=(--manual "$co
 
 # 1. course key from the Secret -> environment only (no xtrace, never echoed)
 set +x
-key_b64="$(kubectl -n "$NS" get secret workbench-keys -o jsonpath='{.data.COURSE_VIRTUAL_KEY}' 2>/dev/null)" \
+key_b64="$(kubectl -n "$NS" get secret "${WB_KEYS_SECRET:-workbench-keys}" -o jsonpath='{.data.COURSE_VIRTUAL_KEY}' 2>/dev/null)" \
   || fail "cannot read Secret $NS/workbench-keys (does it exist? is KUBECONFIG set?)"
 [ -n "$key_b64" ] || fail "Secret $NS/workbench-keys has no COURSE_VIRTUAL_KEY"
 COURSE_VIRTUAL_KEY="$(printf '%s' "$key_b64" | base64 -d)"; export COURSE_VIRTUAL_KEY; unset key_b64
