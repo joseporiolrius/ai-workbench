@@ -26,6 +26,9 @@ pre-S8 interface; it is introduced only at the S8 boundary.
 | `bootstrap_template_path` | yes | cloud-init template, used byte-identically |
 | `instance_type` | yes | from the phase profile |
 | `app_ingress_cidrs` | no | explicit CIDRs for application ports (default: none) |
+| `root_volume_gb` | no | root gp3 size in GB, 25–100 (default 25; `operations-0.3.0` uses 30) |
+| `web_ingress_cidrs` | no | explicit CIDRs allowed on TCP 80, the S9 ingress rule (default: none, port 80 closed) |
+| `web_ingress_self` | no | also allow TCP 80 from the VM's own EIP /32 (default false; `operations-0.3.0`: true). In-cluster probes of `wb.<EIP>.sslip.io` hairpin through the EIP |
 | `cost_tags` | no | extra tags merged onto every resource |
 
 Invalid or missing required inputs fail clearly via variable validation
@@ -64,3 +67,11 @@ terraform -chdir=dbai/terraform/modules/workspace init -backend=false
 terraform -chdir=dbai/terraform/modules/workspace validate
 # plan a consuming root (interface + EIP separation + stable module.workspace.* addresses)
 ```
+
+### Compatibility of the operations-0.3.0 inputs
+
+`root_volume_gb`, `web_ingress_cidrs` and `web_ingress_self` default to the earlier resources
+(25 GB, no port-80 rule). An environment built before them plans **zero changes** with this
+module revision, and so does a vendored student copy that sets none of them. An environment built
+from `operations-0.3.0` must pass the same values from its root: `console.sh` persists them in the
+manifest `inputs`, and the S6 student root sets them in `terraform.tfvars`.

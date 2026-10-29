@@ -47,19 +47,20 @@ provider "aws" {
 module "workspace" {
   source = "./modules/workspace"
 
-  student_id                 = var.student_id
-  aws_region                 = var.aws_region
-  my_ip_cidr                 = var.my_ip_cidr
-  ssh_public_key_path        = var.ssh_public_key_path
-  deploy_public_key_path     = var.deploy_public_key_path
-  instructor_public_key_path = var.instructor_public_key_path
-  eip_allocation_id          = var.eip_allocation_id
-  bootstrap_template_path    = coalesce(var.bootstrap_template_path, "${path.root}/cloud-init.yaml")
-  instance_type              = var.instance_type
-  k3s_enabled                = var.k3s_enabled
-  app_ingress_cidrs          = var.app_ingress_cidrs
-  root_volume_gb             = var.root_volume_gb
-  web_ingress_cidrs          = var.web_ingress_cidrs
-  web_ingress_self           = var.web_ingress_self
-  cost_tags                  = var.cost_tags
+  student_id                  = var.student_id
+  aws_region                  = var.aws_region
+  my_ip_cidr                  = var.my_ip_cidr
+  ssh_public_key_path         = var.ssh_public_key_path
+  deploy_public_key_path      = var.deploy_public_key_path
+  instructor_public_key_path  = var.instructor_public_key_path
+  eip_allocation_id           = var.eip_allocation_id
+  bootstrap_template_path     = coalesce(var.bootstrap_template_path, "${path.root}/cloud-init.yaml")
+  instance_type               = var.instance_type
+  k3s_enabled                 = var.k3s_enabled
+  user_data_replace_on_change = var.k3s_enabled
+  app_ingress_cidrs           = var.app_ingress_cidrs
+  root_volume_gb              = var.root_volume_gb
+  web_ingress_cidrs           = var.web_ingress_cidrs
+  web_ingress_self            = var.web_ingress_self
+  cost_tags                   = var.cost_tags
 }

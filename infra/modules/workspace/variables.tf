@@ -95,12 +95,6 @@ variable "cost_tags" {
   default     = {}
 }
 
-variable "k3s_enabled" {
-  description = "S8 boundary: install the pinned single-node k3s + kubectl + Helm. Absent before S8."
-  type        = bool
-  default     = false
-}
-
 # Profile-driven inputs added with operations-0.3.0 (PROFILE-11). Their defaults
 # reproduce the earlier resources exactly (25 GB, no port 80), so existing
 # environments and vendored copies plan zero changes.
@@ -122,6 +116,18 @@ variable "web_ingress_cidrs" {
 
 variable "web_ingress_self" {
   description = "Also allow TCP 80 from the VM's own EIP (/32) so in-cluster probes reaching wb.<EIP>.sslip.io work."
+  type        = bool
+  default     = false
+}
+
+variable "user_data_replace_on_change" {
+  description = "Replace the instance when first-boot configuration changes. Enable for the deliberate S8 k3s transition; false preserves earlier profile adoption."
+  type        = bool
+  default     = false
+}
+
+variable "k3s_enabled" {
+  description = "S8 boundary: install pinned k3s, kubectl and Helm."
   type        = bool
   default     = false
 }
