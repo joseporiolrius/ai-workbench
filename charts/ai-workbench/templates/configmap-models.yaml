@@ -10,7 +10,7 @@ data:
           "baseUrl": {{ .Values.modelsJson.baseUrl | quote }},
           "api": "openai-completions",
           "apiKey": "$COURSE_VIRTUAL_KEY",
-          "models": [ { "id": {{ .Values.modelsJson.model | quote }} } ]
+          "models": [ { "id": {{ .Values.modelsJson.model | quote }}{{ if .Values.modelsJson.maxTokens }}, "maxTokens": {{ .Values.modelsJson.maxTokens | int }}{{ end }} } ]
         }
       }
     }

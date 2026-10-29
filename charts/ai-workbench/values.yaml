@@ -24,6 +24,8 @@ existingKeysSecret: workbench-keys
 modelsJson:
   provider: course
   baseUrl: https://litellm.joor.net/v1   # OpenAI-compatible course gateway
+  # Optional output cap for bounded instructor rehearsal; null preserves provider defaults.
+  maxTokens: null
   model: course-chat        # nan.builders deepseek-v4-flash on the course gateway (flat rate)
 ingress:
   enabled: false
