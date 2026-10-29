@@ -40,3 +40,11 @@ terraform plan -detailed-exitcode              # expect: No changes (exit 0)
 
 Only after a clean zero-change plan do you own the lifecycle (edit, then
 `apply` / rebuild). `k3s_enabled` is **not** part of this pre-S8 interface.
+
+## S08 bootstrap replacement
+
+When `k3s_enabled = true`, the root enables `user_data_replace_on_change`.
+Read the native plan before applying: this deliberately replaces the VM while
+retaining its separately managed EIP. Use the operations-0.3.0 values
+`t3.large`, 30 GB and `web_ingress_self = true`. Earlier-profile defaults retain
+the zero-change adoption contract.

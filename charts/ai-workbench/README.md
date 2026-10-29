@@ -17,6 +17,21 @@ default-disabled `extension` interface. The UI reads `COURSE_VIRTUAL_KEY` from a
 **existing** secret — the chart holds **no** real key and deploys **no** LLM
 gateway.
 
+## DNS and HTTPS (0.3.0)
+
+Public ingress requires your assigned `wb.aNNN.dbai24.i40sys.com` name and enabled
+basic authentication. HTTP only redirects to HTTPS; HTTPS still returns401 without
+credentials. The instructor provisions `ingress.tls.secretName` in the release's
+namespace before class. The chart references that existing Secret and never creates
+Certificate, Issuer, ACME account or TLS-key resources. Upgrades and rollbacks must
+preserve the same hostname, authentication Secret and TLS Secret references.
+
+Keep ingress disabled until prerequisites are ready. A legacy HTTP-only release
+is rejected by the instructor's cluster admission guard; use a compatible qualified
+tag for rollback. Do not remove that guard or authentication to make an old tag run.
+Staging certificates are only for instructor qualification with explicit test CA
+trust; they are not publicly trusted classroom certificates.
+
 ## Persistence
 
 Qdrant uses a `local-path` PVC; data survives pod replacement and chart upgrade.

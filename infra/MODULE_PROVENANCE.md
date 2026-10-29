@@ -1,32 +1,28 @@
-# Vendored module provenance
+# S08 vendored module provenance
 
-`infra/modules/workspace/` is a **pinned, verbatim copy** of the shared course
-workspace module (RECOVERY-01), so this student root is self-contained and
-reviewable without fetching a private repository during `terraform init`.
+Source: `oriolrius/ec2-console`, `dbai/terraform/modules/workspace/`, revision
+`f0428d8` (M12 candidate, based on PR #43; immutable publication pending qualification).
+Provider: hashicorp/aws ~> 5.0, locked by `.terraform.lock.hcl`.
 
-| Field | Value |
-|---|---|
-| Source repo | `oriolrius/ec2-console` |
-| Source path | `dbai/terraform/modules/workspace/` |
-| Pinned revision | `e6bae45c63a9fd56f41e0b4c8b5a9c97a9cdb2bf` (main, PR #21; previously `78281ae`) |
-| Provider | `hashicorp/aws ~> 5.0` (locked to 5.100.0 in `.terraform.lock.hcl`) |
+The S08 overlay adds only a `k3s_enabled` boolean and forwards it into the
+bootstrap template. All other module files match the pinned source. The student
+root opts into `user_data_replace_on_change` when k3s is enabled. This makes the
+S08 first-boot transition replace the VM deliberately, preserving the separately
+managed EIP. False preserves the earlier containers-profile adoption.
 
-Because the module code and the `module "workspace"` block name match the
-controller root exactly, every resource keeps the same address
-(`module.workspace.aws_*`) — the basis for the zero-change adoption plan.
+The S08 bootstrap template installs k3s v1.30.5+k3s1 and Helm v3.15.4.
+Use `instance_type = "t3.large"`, `root_volume_gb = 30` and
+`web_ingress_self = true` for operations-0.3.0.
 
-**Do not edit the vendored module here.** A module change is a course-wide
-concern: it is made in `ec2-console`, re-pinned, and re-vendored. The
-`k3s_enabled` input is intentionally absent from this pre-S8 interface.
+Qualification: earlier-profile native plan unchanged; S08 plan replaces the VM
+and EIP association without destroying the address allocation. A real apply
+finished cloud-init successfully and non-sudo kubectl showed a Ready node.
+The complete deployment/scaling/failed-rollout/rollback rehearsal also passed.
 
-`infra/cloud-init.yaml` is likewise byte-identical to the controller's
-containers-profile bootstrap template
-(`ec2-console dbai/profiles/containers/cloud-init.yaml.tftpl`):
+Change the shared module upstream first, then re-pin and re-vendor; keep this
+explicit S08 template overlay documented.
 
-    sha256(infra/cloud-init.yaml) = 137bb7d571dd0434ecb589a0d080a6e45b9f5a69efdb7425bb87a173d817829a
-
-**starter v1.3.0 re-vendor (operations-0.3.0).** The module gains `root_volume_gb`, `web_ingress_cidrs`
-and `web_ingress_self`. Their defaults reproduce the earlier resources, so an environment built
-before them still plans zero changes. A VM rebuilt at S8 with `operations-0.3.0` needs
-`root_volume_gb = 30` and `web_ingress_self = true` in your `terraform.tfvars`. The only local
-delta from the ec2-console module is still the S8 `k3s_enabled` template input.
+M12 adds `web_ingress_ports`, default `[80]` for unchanged earlier workspaces.
+S09 selects `[80,443]` with the same explicit CIDRs and optional own-EIP access.
+This changes only security-group rules; certificate tooling is installed in place,
+without modifying populated-node bootstrap data or replacing the VM.
