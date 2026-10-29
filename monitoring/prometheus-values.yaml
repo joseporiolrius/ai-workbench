@@ -32,13 +32,16 @@ server:
 # that last one is how Qdrant is found once you add its podAnnotations.
 
 # --- the black-box probe -----------------------------------------------------
-# The authenticated workbench URL (your S9 ingress, e.g. http://wb.<IP>.sslip.io/).
+# The authenticated HTTPS workbench URL (https://wb.aNNN.dbai24.i40sys.com/).
 # install-monitoring.sh fills this from the live workbench Ingress; it is not a
 # secret. The probe credentials live ONLY in Secret monitoring/workbench-probe-auth.
 workbenchProbe:
   url: ""
 
 extraScrapeConfigs: |
+  - job_name: cert-manager
+    static_configs:
+      - targets: [cert-manager.cert-manager.svc.cluster.local:9402]
   - job_name: workbench-probe
     metrics_path: /probe
     params:
@@ -69,3 +72,27 @@ serverFiles:
             annotations:
               summary: "Workbench is down (authenticated probe failing)"
               description: "probe_success for {{ $labels.instance }} has been 0 for 2 minutes."
+          - alert: WorkbenchCertificateExpiring
+            expr: probe_ssl_earliest_cert_expiry{job="workbench-probe"} - time() < 14 * 86400
+            for: 10m
+            labels: { severity: warning }
+            annotations:
+              summary: "Workbench certificate expires within 14 days; ask the instructor to inspect renewal"
+          - alert: WorkbenchCertificateNotReady
+            expr: certmanager_certificate_ready_status{job="cert-manager",namespace="workbench",condition="True"} == 0
+            for: 10m
+            labels: { severity: warning }
+            annotations:
+              summary: "Workbench certificate is not Ready; inspect DNS and issuer status without reissuing"
+          - alert: WorkbenchRenewalOverdue
+            expr: time() - certmanager_certificate_renewal_timestamp_seconds{job="cert-manager",namespace="workbench"} > 86400
+            for: 10m
+            labels: { severity: warning }
+            annotations:
+              summary: "Workbench renewal has been due for over a day; inspect events and quota reservation"
+          - alert: CertificateControllerUnavailable
+            expr: up{job="cert-manager"} == 0
+            for: 5m
+            labels: { severity: warning }
+            annotations:
+              summary: "Certificate controller metrics unavailable"

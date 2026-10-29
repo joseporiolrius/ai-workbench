@@ -1,5 +1,8 @@
 # S10 monitoring — runbook
 
+DNS/HTTPS diagnostics, expiry and renewal panels, shared-service ownership and
+the bounded qualification procedure are in [DNS_TLS.md](DNS_TLS.md).
+
 Three **independent** Helm releases in namespace `monitoring` watch the S9 workbench
 (`workbench` namespace, pi-web-ui + Qdrant behind Traefik basic-auth):
 
@@ -58,7 +61,8 @@ password then returns 401, the new one 200.
   (Alertmanager, Pushgateway, Grafana sidecar/init images …) fails **before** anything is installed.
 - **Preflight**: fails with an explicit message if `monitoring/workbench-probe-auth` is
   missing or lacks `username`/`password` (it will not install a probe that can only report 0).
-  The probe target is read from your workbench Ingress: `http://wb.<PUBLIC_IP>.sslip.io/`.
+  The probe target is read from your workbench Ingress: `https://wb.aNNN.dbai24.i40sys.com/`.
+  The installer rejects plaintext and unassigned URLs before sending credentials.
 - **Repeat**: running it again converges to the same three `deployed` releases (only the
   revision numbers go up). The *first* repeat restarts the Grafana pod once (the chart re-quotes
   the preserved admin password, which changes a checksum annotation); the password and the
@@ -194,13 +198,19 @@ kubectl -n workbench scale deploy/workbench-pi-web-ui --replicas=1
 
 ```bash
 kubectl -n monitoring port-forward svc/blackbox-prometheus-blackbox-exporter 9115:9115
-curl -s "localhost:9115/probe?module=workbench_authenticated&debug=true&target=http://wb.<IP>.sslip.io/" \
+curl -s "localhost:9115/probe?module=workbench_authenticated&debug=true&target=https://wb.aNNN.dbai24.i40sys.com/" \
   | grep -E 'status_code|probe_success '
 #   status_code=401 -> credential mismatch: re-run set-workbench-credentials.sh
 #   status_code=404/502 -> backend down: kubectl -n workbench get pods; logs
 ```
 
-## 8. Homework: Grafana behind your S9 basic-auth (you build it)
+## 8. Optional extension: Grafana behind authenticated HTTPS
+
+Grafana stays private by default, including for homework and assessment. Attempt
+public exposure only after the instructor allocates a separate hostname and an
+already-issued matching TLS Secret under the cohort certificate budget. The
+workbench certificate covers only its own hostname. This extension is not part
+of the required lab and must not trigger another issuance as an experiment.
 
 Write your own values file (e.g. `monitoring/grafana-route-values.yaml`) that layers on
 `grafana-values.yaml`, then install with it and stop using the port-forward:
@@ -210,7 +220,8 @@ MONITORING_EXTRA_VALUES_GRAFANA=monitoring/grafana-route-values.yaml ./scripts/i
 ```
 
 Facts you need (the rest is S9 knowledge):
-- Host pattern: `grafana.<PUBLIC_IP>.sslip.io`, `ingressClassName: traefik`.
+- Use the instructor-approved hostname, `ingressClassName: traefik`, the
+  `websecure` entrypoint and the existing matching TLS Secret; no plaintext route.
 - A Traefik `Middleware` can only read a Secret **in its own namespace**, so it lives in
   `monitoring` and uses `monitoring/grafana-basic-auth` (the credentials script already keeps that
   copy of your S9 htpasswd in sync). The grafana chart can render extra objects: see its

@@ -72,3 +72,20 @@ Input revisions (qualified before this tag):
 
 Import: `git fetch upstream --tags && git merge starter-s12-v1.0.1`. Nothing else changes, and
 `starter-s12-v1.0.0` stays published.
+
+## M12 HTTPS candidate (not yet an immutable classroom release)
+
+The cumulative M12 branch merges the S09/S10 HTTPS changes into this S12 increment.
+Use its reviewed full commit SHA for qualification; do not use the historical imports above
+as an HTTPS-compatible release. TASK-186 must pass before TASK-187 publishes the new tag.
+
+Keep the assigned `wb.<student-id>.dbai24.i40sys.com` hostname, the existing TLS Secret,
+and BasicAuth enabled. The instructor owns cert-manager, the issuer, the scoped DNS credential,
+and TLS Secret lifecycle; Helm and corpus rollback must preserve them. Terraform must allow
+TCP443 as well as the HTTP-to-HTTPS redirect on80. The release smoke now checks HTTPS with
+normal hostname/chain validation, then exercises the same gated retrieval path as before.
+
+Qualification uses k3s1.34.12+k3s1 with cert-manager1.21.3; this is instructor preparation,
+not a student upgrade exercise. Explicit staging CA trust is allowed only for instructor
+qualification (`CURL_CA_BUNDLE`); classroom use requires a publicly trusted certificate.
+Do not disable certificate verification or replace the named ingress with an IP address.

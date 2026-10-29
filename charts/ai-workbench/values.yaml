@@ -27,7 +27,10 @@ modelsJson:
   model: course-chat        # nan.builders deepseek-v4-flash on the course gateway (flat rate)
 ingress:
   enabled: false
-  host: ""                                       # e.g. wb.<IP>.sslip.io
+  host: ""                                       # assigned wb.aNNN.dbai24.i40sys.com
+  tls:
+    # Instructor-provisioned; Helm never creates or owns certificate/key material.
+    secretName: workbench-tls
   basicAuth:
     enabled: false
     secretName: workbench-basic-auth             # imperatively created (bcrypt htpasswd)

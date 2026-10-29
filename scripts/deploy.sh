@@ -110,11 +110,12 @@ if [ -n "$ingress_host" ]; then
   user="${WB_SMOKE_USER:-$(kubectl -n monitoring get secret workbench-probe-auth -o jsonpath='{.data.username}' 2>/dev/null | base64 -d)}"
   pass="${WB_SMOKE_PASS:-$(kubectl -n monitoring get secret workbench-probe-auth -o jsonpath='{.data.password}' 2>/dev/null | base64 -d)}"
   # Reach Traefik on THIS node (--resolve): the smoke runs on the VM, whose public address may be
-  # firewalled for itself (security group opened only to your laptop); the path is still ingress + auth.
-  code="$(curl -s --max-time 20 --resolve "$ingress_host:80:127.0.0.1" -o /dev/null -w '%{http_code}' \
-          -u "$user:$pass" "http://$ingress_host/api/health")"; unset pass
-  if [ "$code" = 200 ]; then log "smoke: authenticated ingress http://$ingress_host/api/health -> 200"
-  else log "smoke: authenticated ingress http://$ingress_host/api/health -> $code"; smoke_ok=0; fi
+  # firewalled for itself; HTTPS still validates the assigned hostname and CA chain.
+  # Qualification may supply CURL_CA_BUNDLE with explicit staging roots; never use -k.
+  code="$(curl -s --max-time 20 --resolve "$ingress_host:443:127.0.0.1" -o /dev/null -w '%{http_code}' \
+          -u "$user:$pass" "https://$ingress_host/api/health")"; unset pass
+  if [ "$code" = 200 ]; then log "smoke: authenticated ingress https://$ingress_host/api/health -> 200"
+  else log "smoke: authenticated ingress https://$ingress_host/api/health -> $code"; smoke_ok=0; fi
 fi
 if [ "$smoke_ok" = 1 ] && ! "${PY[@]}" scripts/smoke_release.py --sha "$REL_SHA" --namespace "$NS" --deployment "$REL-pi-web-ui"; then
   smoke_ok=0

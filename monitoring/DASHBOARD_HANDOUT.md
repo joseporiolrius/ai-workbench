@@ -19,6 +19,10 @@ paste the query, set the title and unit, **Apply**.
 
 Save it as **Workbench**.
 
+Add certificate days-remaining and readiness panels using the queries in
+[DNS_TLS.md](DNS_TLS.md). A healthy HTTPS probe validates the assigned hostname,
+certificate chain and basic-auth; `up` alone is only exporter availability.
+
 ## Checks before you call a panel done
 
 - It shows data (not "No data") over the last 15 minutes.
@@ -46,4 +50,5 @@ No passwords, tokens or keys in any screenshot or file.
    `node_memory_MemTotal_bytes`). Compare node headroom with the pods' usage.
 2. **Export** the dashboard (Share → Export → Save to file) and commit it as
    `monitoring/dashboards/workbench.json`. Check it contains no credentials.
-3. Expose Grafana through Traefik behind your S9 basic-auth, then stop using the port-forward.
+3. Keep Grafana private through SSH/port-forwarding. Public HTTPS is optional and
+   requires the instructor's separate hostname/certificate allocation; see README §8.

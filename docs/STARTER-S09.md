@@ -1,4 +1,50 @@
-# S9 starter increment — `starter-s09-v1.0.0`
+# S09 DNS/HTTPS starter candidate
+
+This candidate extends the canonical ESADE `starter-s09-v1.3.0` and imports the
+`starter-s08-v1.4.0` bootstrap fix. Its new immutable release tag is assigned only
+after qualification. It does not move previous tags.
+
+For the DNS/HTTPS increment, use the assigned `wb.aNNN.dbai24.i40sys.com` hostname,
+enable basic-auth, and consume the instructor-provisioned TLS Secret through
+`ingress.tls.secretName`. Set `web_ingress_ports = [80,443]` alongside the explicit
+`web_ingress_cidrs` in Terraform. Review the plan: only the security group may
+change; do not apply a plan that replaces the retained VM. HTTP redirects to HTTPS.
+Neither the chart nor CD owns the TLS key or ACME account state. A rollback uses a
+compatible DNS/HTTPS tag; the cluster rejects a legacy HTTP-only Ingress.
+
+The instructor prepares cert-manager and DNS credentials before class. Students
+still author only their values, DNS address record, workflow and evidence. Public
+trust and cohort issuance capacity must pass the M12 release gate before classroom
+use; a staging rehearsal is not that approval.
+
+### Address changes and recovery
+
+The certificate identifies the hostname, not the EC2 address. Keep the allocated
+Elastic IP when stopping and starting the VM. For an intentional replacement,
+verify the new VM and its external controller state first, recover the existing
+TLS/ACME Secrets through the instructor's private recovery procedure, then update
+only the assigned hostname's A record. Allow its 300-second TTL to expire and
+verify both authoritative servers before releasing the old address. Never create
+another certificate just to change an A record or to rerun a deployment.
+
+Keep `ingress.host`, `ingress.tls.secretName` and `ingress.basicAuth` unchanged in
+image-only commits and reverts. Use `helm history workbench -n workbench` to select
+a compatible HTTPS revision for rollback. Re-running a pre-HTTPS starter is not a
+supported downgrade: the instructor's admission policy rejects its plain-HTTP
+Ingress. Do not remove that policy to make an old deployment succeed. Certificates,
+the ACME account, TSIG credentials and application identity Secrets remain outside
+the chart's ownership; do not delete them during rollback or import.
+
+Qualification uses one short chat request with automatic retries disabled. Bound
+the model's response tokens to the temporary gateway key's allowance; a 429 means
+stop and diagnose the request, not raise a quota or start another retry loop.
+Staging roots belong only in the isolated qualification client's CA file, never
+the student's normal browser trust store.
+
+## Historical S09 increments (before DNS/HTTPS)
+
+The instructions below describe the earlier immutable releases and their original
+HTTP-only exercises. Use the new qualified package for the amended DNS/HTTPS course.
 
 **Ref:** `starter-s09-v1.0.0` (annotated tag on the `starter-s09` lineage, a descendant of
 `starter-s08-v1.1.0`). The tag is **immutable**: any fix is published as a new tag

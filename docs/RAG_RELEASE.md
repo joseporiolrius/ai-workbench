@@ -13,6 +13,24 @@ Every release command runs from a clean, detached, exact-SHA worktree through
 [`scripts/with-release.sh`](../scripts/RELEASE_WORKTREES.md). Your interactive checkout is never
 reset, and generated files go to `~/releases/workbench-state/<SHA>/`, outside tracked source.
 
+## HTTPS prerequisite for the M12 candidate
+
+Before ingestion, verify the assigned DNS name resolves to this workspace and its existing
+HTTPS endpoint answers401 anonymously and200 with the student's credentials. Keep authentication
+and TLS enabled throughout rollout and rollback. The ingress smoke uses HTTPS on443 and checks
+the assigned hostname and CA chain even when connecting locally with `--resolve`.
+The TLS Secret, ACME account and DNS credentials are instructor-managed and must not be recreated
+by a release. Monitoring probe credentials remain in their existing Kubernetes Secret.
+
+Instructor staging rehearsal may explicitly set `CURL_CA_BUNDLE` to the official staging roots;
+this does not qualify browser public trust. Never use `curl -k` or a global TLS verification bypass.
+Before a live rehearsal, budget the embedding calls (currently163 chunks,3 consistency checks,
+and10 evaluation queries) and the agent smoke against the actual key and shared upstream limits.
+Do not start a run that cannot fit its deadline or available quota. For bounded qualification,
+set `SMOKE_RATE_LIMIT_RETRIES=0`; a429 is a stop condition, not evidence of successful deployment.
+Existing successful retrieval evidence may be reused only where its inputs are unchanged;
+never manufacture a receipt for a new SHA or skip the release gate.
+
 ## 1. Bundle the candidate inputs (`scripts/ingest_bundle.py`)
 
 ```bash
