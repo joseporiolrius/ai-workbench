@@ -184,6 +184,9 @@ resource "aws_instance" "this" {
     k3s_enabled     = var.k3s_enabled
   })
 
+  # S8 changes first-boot configuration; opt in to replacing the node.
+  user_data_replace_on_change = var.user_data_replace_on_change
+
   root_block_device {
     volume_size = var.root_volume_gb
     volume_type = "gp3"
