@@ -2,5 +2,5 @@ apiVersion: v2
 name: ai-workbench
 description: DBAI S9 persistent workbench (pi-web-ui + Qdrant) — course chart; students author only values.
 type: application
-version: 0.2.1
+version: 0.3.0
 appVersion: "1.0.0"
