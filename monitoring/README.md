@@ -1,5 +1,8 @@
 # S10 monitoring — runbook
 
+DNS/HTTPS diagnostics, expiry and renewal panels, shared-service ownership and
+the bounded qualification procedure are in [DNS_TLS.md](DNS_TLS.md).
+
 Three **independent** Helm releases in namespace `monitoring` watch the S9 workbench
 (`workbench` namespace, pi-web-ui + Qdrant behind Traefik basic-auth):
 
@@ -58,7 +61,8 @@ password then returns 401, the new one 200.
   (Alertmanager, Pushgateway, Grafana sidecar/init images …) fails **before** anything is installed.
 - **Preflight**: fails with an explicit message if `monitoring/workbench-probe-auth` is
   missing or lacks `username`/`password` (it will not install a probe that can only report 0).
-  The probe target is read from your workbench Ingress: `http://wb.<PUBLIC_IP>.sslip.io/`.
+  The probe target is read from your workbench Ingress: `https://wb.aNNN.dbai24.i40sys.com/`.
+  The installer rejects plaintext and unassigned URLs before sending credentials.
 - **Repeat**: running it again converges to the same three `deployed` releases (only the
   revision numbers go up). The *first* repeat restarts the Grafana pod once (the chart re-quotes
   the preserved admin password, which changes a checksum annotation); the password and the

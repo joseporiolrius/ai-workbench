@@ -40,7 +40,7 @@ DIGEST_RE = re.compile(r"^sha256:[0-9a-f]{64}$")
 PLACEHOLDERS = {"", "tbd", "todo", "pending", "latest", "null", "none", "xxx", "changeme"}
 MUTABLE_TAGS = {"latest", "main", "master", "head", "stable", "edge", "nightly"}
 # Only used to satisfy `required` in prometheus-values.yaml during a render check.
-RENDER_PROBE_URL = "http://wb.render-check.invalid/"
+RENDER_PROBE_URL = "https://wb.a000.dbai24.i40sys.com/"
 
 
 class InventoryError(Exception):

@@ -8,7 +8,7 @@
 #   ./scripts/install-monitoring.sh             # preflight, install/upgrade, wait for readiness
 #
 # Env (optional): WORKBENCH_NS (workbench), WORKBENCH_RELEASE (workbench),
-#                 WORKBENCH_URL (default: http://<host of the workbench Ingress>/),
+#                 WORKBENCH_URL (default: https://<assigned workbench hostname>/),
 #                 MONITORING_TIMEOUT (5m), MONITORING_EXTRA_VALUES_<RELEASE> (file[:file])
 #
 # It never reads, prints or passes a credential: the probe credentials live only
@@ -50,13 +50,17 @@ if [[ -z "${WORKBENCH_URL:-}" ]]; then
   host="$(kubectl -n "$WORKBENCH_NS" get ingress "$WORKBENCH_RELEASE" \
             -o jsonpath='{.spec.rules[0].host}' 2>/dev/null || true)"
   if [[ -n "$host" ]]; then
-    WORKBENCH_URL="http://$host/"
+    WORKBENCH_URL="https://$host/"
   elif [[ $DRY_RUN -eq 1 ]]; then
-    WORKBENCH_URL="http://wb.<PUBLIC_IP>.sslip.io/"
+    WORKBENCH_URL="https://wb.a000.dbai24.i40sys.com/"
   else
     fail "cannot find Ingress $WORKBENCH_NS/$WORKBENCH_RELEASE host; set WORKBENCH_URL"
   fi
 fi
+
+# Never send the probe credential over plaintext or to an arbitrary host.
+[[ "$WORKBENCH_URL" =~ ^https://wb\.a[0-9]{3}\.dbai24\.i40sys\.com/?$ ]] ||
+  fail "WORKBENCH_URL must be the assigned https://wb.aNNN.dbai24.i40sys.com/"
 
 helm_cmd() {  # prints one release's full command, one arg per line
   local rel="$1" args
