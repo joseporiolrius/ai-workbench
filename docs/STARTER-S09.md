@@ -17,6 +17,30 @@ still author only their values, DNS address record, workflow and evidence. Publi
 trust and cohort issuance capacity must pass the M12 release gate before classroom
 use; a staging rehearsal is not that approval.
 
+### Address changes and recovery
+
+The certificate identifies the hostname, not the EC2 address. Keep the allocated
+Elastic IP when stopping and starting the VM. For an intentional replacement,
+verify the new VM and its external controller state first, recover the existing
+TLS/ACME Secrets through the instructor's private recovery procedure, then update
+only the assigned hostname's A record. Allow its 300-second TTL to expire and
+verify both authoritative servers before releasing the old address. Never create
+another certificate just to change an A record or to rerun a deployment.
+
+Keep `ingress.host`, `ingress.tls.secretName` and `ingress.basicAuth` unchanged in
+image-only commits and reverts. Use `helm history workbench -n workbench` to select
+a compatible HTTPS revision for rollback. Re-running a pre-HTTPS starter is not a
+supported downgrade: the instructor's admission policy rejects its plain-HTTP
+Ingress. Do not remove that policy to make an old deployment succeed. Certificates,
+the ACME account, TSIG credentials and application identity Secrets remain outside
+the chart's ownership; do not delete them during rollback or import.
+
+Qualification uses one short chat request with automatic retries disabled. Bound
+the model's response tokens to the temporary gateway key's allowance; a 429 means
+stop and diagnose the request, not raise a quota or start another retry loop.
+Staging roots belong only in the isolated qualification client's CA file, never
+the student's normal browser trust store.
+
 ## Historical S09 increments (before DNS/HTTPS)
 
 The instructions below describe the earlier immutable releases and their original
