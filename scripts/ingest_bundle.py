@@ -151,6 +151,10 @@ def render_job(configmap: dict, identity: dict, deadline: int = 600) -> dict:
     except (KeyError, ValueError) as exc:
         raise BundleError(f"k8s/ingest-job.yaml has an unknown placeholder: {exc}") from exc
     job["spec"]["template"]["spec"]["volumes"][0]["configMap"]["items"] = items(configmap)
+    for name in ("RAG_QUALIFICATION_BUDGET", "RAG_QUALIFICATION_INTERVAL_SECONDS"):
+        if name in os.environ:
+            job["spec"]["template"]["spec"]["containers"][0]["env"].append(
+                {"name": name, "value": os.environ[name]})
     return job
 
 

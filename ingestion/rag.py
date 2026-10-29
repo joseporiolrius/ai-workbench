@@ -13,6 +13,7 @@ HTTP (httpx) against two services:
 from __future__ import annotations
 
 import hashlib
+import math
 import os
 import re
 import subprocess
@@ -34,6 +35,10 @@ NAME = re.compile(r"^[A-Za-z0-9_-]{1,255}$")
 EMBED_PARALLEL = 4
 RETRIES = 3
 RATE_LIMIT_RETRIES = 8
+
+
+_qualification_requests = 0
+_qualification_next_request = 0.0
 
 
 class RagError(CorpusError):
@@ -188,6 +193,9 @@ def embed(texts: list[str], model: str, gateway: str, key: str) -> list[list[flo
         if len(data) != 1:
             raise RagError(f"gateway returned {len(data)} vectors for 1 input")
         return data[0]["embedding"]
+    if os.environ.get("RAG_QUALIFICATION_BUDGET") is not None:
+        # Serial execution stops before the next request after any failure: no queued work.
+        return [one(text) for text in texts]
     with ThreadPoolExecutor(max_workers=EMBED_PARALLEL) as pool:
         return list(pool.map(one, texts))
 
@@ -209,6 +217,24 @@ def _post_with_retry(client: httpx.Client, url: str, body: dict, key: str) -> ht
     """Retry transient failures: timeouts/connection resets and 5xx (RETRIES attempts), and
     rate limiting — HTTP 429 that is NOT a budget error — with backoff honouring Retry-After
     (RATE_LIMIT_RETRIES attempts). Auth, alias and budget errors are returned at once."""
+    if os.environ.get("RAG_QUALIFICATION_BUDGET") is not None:
+        global _qualification_requests, _qualification_next_request
+        try:
+            budget = int(os.environ["RAG_QUALIFICATION_BUDGET"])
+            interval = float(os.environ["RAG_QUALIFICATION_INTERVAL_SECONDS"])
+            if budget <= 0 or not math.isfinite(interval) or interval <= 0:
+                raise ValueError
+        except (KeyError, ValueError) as exc:
+            raise RagError("qualification requires a positive request budget and interval") from exc
+        if _qualification_requests >= budget:
+            raise RagError("qualification request budget exhausted; no request sent")
+        time.sleep(max(0, _qualification_next_request - time.monotonic()))
+        _qualification_requests += 1
+        _qualification_next_request = time.monotonic() + interval
+        try:
+            return client.post(url, json=body, headers={"Authorization": f"Bearer {key}"})
+        except httpx.HTTPError as exc:
+            raise RagError(f"qualification gateway failure: {type(exc).__name__}; no retry") from exc
     attempt = limited = 0
     while True:
         attempt += 1

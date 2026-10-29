@@ -284,3 +284,38 @@ def test_rate_limit_is_retried_but_budget_is_not(monkeypatch):
     calls.clear()
     budget = rag._post_with_retry(Client([R(429, "Budget has been exceeded!")]), "u", {}, "k")
     assert budget.status_code == 429 and len(calls) == 1
+
+
+def test_qualification_stops_at_first_429_without_queue_or_retry(monkeypatch):
+    import httpx
+    monkeypatch.setenv("RAG_QUALIFICATION_BUDGET", "4")
+    monkeypatch.setenv("RAG_QUALIFICATION_INTERVAL_SECONDS", "2.1")
+    monkeypatch.setattr(rag, "_qualification_requests", 0)
+    monkeypatch.setattr(rag, "_qualification_next_request", 0)
+    calls = []
+    def post(self, *args, **kwargs):
+        calls.append(1)
+        return httpx.Response(429, text="rate limited")
+    monkeypatch.setattr(httpx.Client, "post", post)
+    with pytest.raises(rag.RagError, match="HTTP 429"):
+        rag.embed(["one", "two", "three"], "course-embed", "https://fixture.invalid", "private")
+    assert len(calls) == 1
+
+
+def test_qualification_budget_and_pacing(monkeypatch):
+    import httpx
+    monkeypatch.setenv("RAG_QUALIFICATION_BUDGET", "2")
+    monkeypatch.setenv("RAG_QUALIFICATION_INTERVAL_SECONDS", "13")
+    monkeypatch.setattr(rag, "_qualification_requests", 0)
+    monkeypatch.setattr(rag, "_qualification_next_request", 0)
+    now = [100.0]
+    starts = []
+    monkeypatch.setattr(rag.time, "monotonic", lambda: now[0])
+    monkeypatch.setattr(rag.time, "sleep", lambda n: now.__setitem__(0, now[0]+n))
+    def post(self, *args, **kwargs):
+        starts.append(now[0])
+        return httpx.Response(200, json={"data": [{"embedding": [1.0]}]})
+    monkeypatch.setattr(httpx.Client, "post", post)
+    with pytest.raises(rag.RagError, match="budget exhausted"):
+        rag.embed(["one", "two", "three"], "course-embed", "https://fixture.invalid", "private")
+    assert starts == [100.0, 113.0]

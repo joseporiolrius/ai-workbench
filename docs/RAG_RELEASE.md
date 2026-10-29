@@ -27,7 +27,11 @@ this does not qualify browser public trust. Never use `curl -k` or a global TLS 
 Before a live rehearsal, budget the embedding calls (currently163 chunks,3 consistency checks,
 and10 evaluation queries) and the agent smoke against the actual key and shared upstream limits.
 Do not start a run that cannot fit its deadline or available quota. For bounded qualification,
-set `SMOKE_RATE_LIMIT_RETRIES=0`; a429 is a stop condition, not evidence of successful deployment.
+set `RAG_QUALIFICATION_BUDGET` and `RAG_QUALIFICATION_INTERVAL_SECONDS` to the approved
+per-process call cap and minimum start interval. This switches embeddings to serial execution
+with no retries (including429/5xx/timeouts), stops on the first failure, and applies to the
+rendered ingestion Job and local evaluator. These controls do not change gateway quotas and
+do not reserve capacity against other users. Also set `SMOKE_RATE_LIMIT_RETRIES=0`; a429 is a stop condition, not evidence of successful deployment.
 Existing successful retrieval evidence may be reused only where its inputs are unchanged;
 never manufacture a receipt for a new SHA or skip the release gate.
 
