@@ -14,8 +14,8 @@ Use these panels alongside the existing Qdrant and golden-signal panels:
 | Did the server reject auth or fail? | `probe_http_status_code{job="workbench-probe"}` | 401: check the paired credentials; 404/5xx: inspect Ingress/endpoints/pods |
 | Did HTTPS negotiate? | `probe_http_ssl{job="workbench-probe"}` | 1 proves TLS was used; combine with probe success for verification |
 | How long until the served certificate expires? | `(probe_ssl_earliest_cert_expiry{job="workbench-probe"} - time()) / 86400` | Investigate below 14 days; never force an issuance to test a panel |
-| Is the managed certificate ready? | `certmanager_certificate_ready_status{namespace="workbench",condition="True"}` | 0: ask the instructor to inspect Certificate, Issuer and events |
-| Has renewal been due for more than a day? | `time() - certmanager_certificate_renewal_timestamp_seconds{namespace="workbench"}` | Above 86400: inspect renewal errors and the issuance ledger |
+| Is the managed certificate ready? | `certmanager_certificate_ready_status{job="cert-manager",namespace="workbench",condition="True"}` | 0: ask the instructor to inspect Certificate, Issuer and events |
+| Has renewal been due for more than a day? | `time() - certmanager_certificate_renewal_timestamp_seconds{job="cert-manager",namespace="workbench"}` | Above 86400: inspect renewal errors and the issuance ledger |
 | Is the controller observable? | `up{job="cert-manager"}` | 0: controller or scrape failure, not proof of a bad certificate |
 
 The supplied expiry, readiness, renewal-overdue and controller alerts complement
