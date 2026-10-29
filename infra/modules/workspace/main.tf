@@ -132,13 +132,14 @@ resource "aws_security_group" "this" {
     }
   }
 
-  # Web port 80 only for explicit CIDRs and, when enabled, the VM's own EIP.
+  # Only selected web ports, explicit CIDRs and optional own-EIP probes.
+  # The default [80] preserves the exact existing rule and resource identity.
   dynamic "ingress" {
-    for_each = length(local.web_cidrs) > 0 ? [1] : []
+    for_each = length(local.web_cidrs) > 0 ? var.web_ingress_ports : toset([])
     content {
-      description = "Web port 80 (explicit CIDRs + own EIP hairpin)"
-      from_port   = 80
-      to_port     = 80
+      description = "Web port ${ingress.value} (explicit CIDRs + own EIP hairpin)"
+      from_port   = ingress.value
+      to_port     = ingress.value
       protocol    = "tcp"
       cidr_blocks = local.web_cidrs
     }

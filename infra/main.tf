@@ -61,6 +61,7 @@ module "workspace" {
   app_ingress_cidrs           = var.app_ingress_cidrs
   root_volume_gb              = var.root_volume_gb
   web_ingress_cidrs           = var.web_ingress_cidrs
+  web_ingress_ports           = var.web_ingress_ports
   web_ingress_self            = var.web_ingress_self
   cost_tags                   = var.cost_tags
 }

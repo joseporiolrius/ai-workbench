@@ -27,4 +27,5 @@ ssh_public_key_path = "/absolute/path/to/dbai.pub"  # your controller-local SSH 
 # web_ingress_self = true
 
 # --- S9: open port 80 for your workbench ingress (doc-11 Part B) ---
-# web_ingress_cidrs = ["0.0.0.0/0"]   # then lock the workbench with basic-auth
+# web_ingress_cidrs = ["0.0.0.0/0"]   # HTTPS and basic-auth are mandatory
+# web_ingress_ports = [80, 443]        # HTTP redirects; workbench serves on HTTPS

@@ -79,9 +79,15 @@ variable "root_volume_gb" {
 }
 
 variable "web_ingress_cidrs" {
-  description = "Explicit CIDRs allowed on TCP 80 (your S9 ingress rule)."
+  description = "Explicit CIDRs allowed on selected web ports (S9 HTTPS and redirect)."
   type        = list(string)
   default     = []
+}
+
+variable "web_ingress_ports" {
+  description = "Web ports to expose; [80,443] for S9 HTTPS plus HTTP redirect."
+  type        = set(number)
+  default     = [80]
 }
 
 variable "web_ingress_self" {

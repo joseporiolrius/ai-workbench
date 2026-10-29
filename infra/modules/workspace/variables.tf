@@ -109,13 +109,23 @@ variable "root_volume_gb" {
 }
 
 variable "web_ingress_cidrs" {
-  description = "Explicit CIDRs allowed on TCP 80 (the S9 ingress rule). Empty = port 80 closed."
+  description = "Explicit CIDRs allowed on selected web ports (S9: 80 redirect and 443 HTTPS). Empty = no external web rule."
   type        = list(string)
   default     = []
 }
 
+variable "web_ingress_ports" {
+  description = "Web ports opened to the explicit CIDRs and optional own EIP. Default preserves legacy HTTP; S9 HTTPS selects [80, 443]."
+  type        = set(number)
+  default     = [80]
+  validation {
+    condition     = alltrue([for port in var.web_ingress_ports : contains([80, 443], port)])
+    error_message = "web_ingress_ports may contain only 80 and 443."
+  }
+}
+
 variable "web_ingress_self" {
-  description = "Also allow TCP 80 from the VM's own EIP (/32) so in-cluster probes reaching wb.<EIP>.sslip.io work."
+  description = "Also allow selected web ports from the VM's own EIP (/32) for in-cluster public-hostname probes."
   type        = bool
   default     = false
 }

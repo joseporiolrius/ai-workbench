@@ -1,7 +1,7 @@
 # S08 vendored module provenance
 
 Source: `oriolrius/ec2-console`, `dbai/terraform/modules/workspace/`, revision
-`b2a0b2a8f9b9620cfc2e9b41a14cf7b49202524f` (PR #43).
+`f0428d8` (M12 candidate, based on PR #43; immutable publication pending qualification).
 Provider: hashicorp/aws ~> 5.0, locked by `.terraform.lock.hcl`.
 
 The S08 overlay adds only a `k3s_enabled` boolean and forwards it into the
@@ -21,3 +21,8 @@ The complete deployment/scaling/failed-rollout/rollback rehearsal also passed.
 
 Change the shared module upstream first, then re-pin and re-vendor; keep this
 explicit S08 template overlay documented.
+
+M12 adds `web_ingress_ports`, default `[80]` for unchanged earlier workspaces.
+S09 selects `[80,443]` with the same explicit CIDRs and optional own-EIP access.
+This changes only security-group rules; certificate tooling is installed in place,
+without modifying populated-node bootstrap data or replacing the VM.

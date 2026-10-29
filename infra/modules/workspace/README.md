@@ -27,7 +27,8 @@ pre-S8 interface; it is introduced only at the S8 boundary.
 | `instance_type` | yes | from the phase profile |
 | `app_ingress_cidrs` | no | explicit CIDRs for application ports (default: none) |
 | `root_volume_gb` | no | root gp3 size in GB, 25–100 (default 25; `operations-0.3.0` uses 30) |
-| `web_ingress_cidrs` | no | explicit CIDRs allowed on TCP 80, the S9 ingress rule (default: none, port 80 closed) |
+| `web_ingress_cidrs` | no | explicit CIDRs allowed on selected web ports (default: none) |
+| `web_ingress_ports` | no | set of 80 and/or 443; default `[80]` preserves existing resources, S9 HTTPS uses `[80,443]` |
 | `web_ingress_self` | no | also allow TCP 80 from the VM's own EIP /32 (default false; `operations-0.3.0`: true). In-cluster probes of `wb.<EIP>.sslip.io` hairpin through the EIP |
 | `cost_tags` | no | extra tags merged onto every resource |
 

@@ -1,4 +1,26 @@
-# S9 starter increment — `starter-s09-v1.0.0`
+# S09 DNS/HTTPS starter candidate
+
+This candidate extends the canonical ESADE `starter-s09-v1.3.0` and imports the
+`starter-s08-v1.4.0` bootstrap fix. Its new immutable release tag is assigned only
+after qualification. It does not move previous tags.
+
+For the DNS/HTTPS increment, use the assigned `wb.aNNN.dbai24.i40sys.com` hostname,
+enable basic-auth, and consume the instructor-provisioned TLS Secret through
+`ingress.tls.secretName`. Set `web_ingress_ports = [80,443]` alongside the explicit
+`web_ingress_cidrs` in Terraform. Review the plan: only the security group may
+change; do not apply a plan that replaces the retained VM. HTTP redirects to HTTPS.
+Neither the chart nor CD owns the TLS key or ACME account state. A rollback uses a
+compatible DNS/HTTPS tag; the cluster rejects a legacy HTTP-only Ingress.
+
+The instructor prepares cert-manager and DNS credentials before class. Students
+still author only their values, DNS address record, workflow and evidence. Public
+trust and cohort issuance capacity must pass the M12 release gate before classroom
+use; a staging rehearsal is not that approval.
+
+## Historical S09 increments (before DNS/HTTPS)
+
+The instructions below describe the earlier immutable releases and their original
+HTTP-only exercises. Use the new qualified package for the amended DNS/HTTPS course.
 
 **Ref:** `starter-s09-v1.0.0` (annotated tag on the `starter-s09` lineage, a descendant of
 `starter-s08-v1.1.0`). The tag is **immutable**: any fix is published as a new tag
